@@ -1,6 +1,8 @@
 We want to aggregate a large number of tweets and investigate a variety of questions:
 
-- does a corpus assembled from tweets from a certain area follow Zipf's Law?
-  (with their own top ranking words, not those of )
-- does a corpus assembled from one user's tweets follow Zipf's Law?
-- do the word counts of
+- does a random collection of tweets follow Zipf's Law? (aka do the frequencies, when ranked, follow an exponential distribution?)
+- if not, does a geographically grouped collection of tweets follow Zipf's Law (local lingo?)
+- if not, does a single user's collection of tweets follow Zipf's Law? (perhaps that user has his/her own "language")
+- if not, what kind of distribution do these ranked frequencies follow?  is this distribution similar when separating by geographic area?  by user?
+- how can we compare a user's personal "language" to different dialects of English?
+    - could we try "translating" a text in English to a user's own personal language based on word counts?
