@@ -3,7 +3,9 @@ import twitter
 import pandas as pd 
 import numpy as np
 import matplotlib.pyplot as plt
+import pylab as pl
 import nltk
+import operator
 from nltk.probability import FreqDist
 from nltk.probability import ConditionalFreqDist
 
@@ -16,8 +18,8 @@ twitter_api = twitter.Api(
     access_token_key='431244726-M96XnETmwt7fZC3Dkbuy0jsUNOpFAjFZru4z4gCZ',
     access_token_secret='S4kbwMkUrZJfYmbsohaepnnbIMd1YfEZb4IaJoUQtDQ4a')
 
-sn = 'perezhilton'
-user = twitter_api.GetUser(screen_name='perezhilton')
+sn = 'edz504'
+user = twitter_api.GetUser(screen_name=sn)
 
 user_tweets = []
 keep_em_coming = True
@@ -56,19 +58,15 @@ user_tweets_collapse = ''.join(user_tweets_clean3)
 user_tweets_tokens = nltk.word_tokenize(user_tweets_collapse)
 
 fdist = FreqDist(word.lower() for word in user_tweets_tokens)
+fsort_tuple = sorted(fdist.items(), key=operator.itemgetter(1),
+    reverse=True)
 
+NUM_PLOT = 40
+freqs_np_vals = np.array([t[1] for t in fsort_tuple])[0:NUM_PLOT]
+freqs_np_words = np.array([t[0] for t in fsort_tuple])[0:NUM_PLOT]
 
-# playground below
-# search = twitter_api.GetSearch(term='a', 
-#     lang='en', 
-#     result_type='recent', 
-#     count=100, 
-#     max_id='',
-#     geocode= (37.781157,-122.398720, '50mi'))
-
-
-# for t in search:
-#     print t.user.screen_name + ' (' + t.created_at + ')'
-#     #Add the .encode to force encoding
-#     print t.text.encode('utf-8')
-#     print ''
+width = .35
+ind = np.arange(len(freqs_np_vals))
+plt.bar(ind, freqs_np_vals)
+plt.xticks(ind + width / 2, freqs_np_words, rotation='vertical')
+plt.show()
