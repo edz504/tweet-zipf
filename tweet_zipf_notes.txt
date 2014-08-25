@@ -1,0 +1,6 @@
+We want to aggregate a large number of tweets and investigate a variety of questions:
+
+- does a corpus assembled from tweets from a certain area follow Zipf's Law?
+  (with their own top ranking words, not those of )
+- does a corpus assembled from one user's tweets follow Zipf's Law?
+- do the word counts of
