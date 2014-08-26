@@ -77,3 +77,16 @@ sn = 'edz504'
 NUM_PLOT = 80
 plotUserTopNWords(sn=sn, n=NUM_PLOT, fdist = fdist)
 
+# Want to aggregate a bunch of tweets, random users 
+import sys
+from random import randint
+
+users = []
+while (len(users) < 100):
+    uid = randint(1, sys.maxint)
+    try:
+        user = twitter_api.GetUser(user_id=uid)
+    except:
+        continue
+    users.append(user)
+    print(len(users))
