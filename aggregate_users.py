@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import twitter
 import pickle
+import ast
 
 #Setting up Twitter API
 twitter_api = twitter.Api(
