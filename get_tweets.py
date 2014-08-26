@@ -77,36 +77,3 @@ sn = 'edz504'
 NUM_PLOT = 80
 plotUserTopNWords(sn=sn, n=NUM_PLOT)
 
-# Want to aggregate a bunch of tweets, random users 
-import sys, json
-import datetime
-from random import randint
-
-users = []
-
-while (len(users) < 100):
-    uid = randint(1, sys.maxint)
-    try:
-        user = twitter_api.GetUser(user_id=uid)
-    except Exception, e:
-        d = ast.literal_eval(str(e))[0]
-        error_code = d['code']
-        if (error_code == 88):
-            print d['message']
-            rl_stat = twitter_api.GetRateLimitStatus()
-            user_lookup_stat = rl_stat['resources']['users']['/users/show/:id']
-            remaining = user_lookup_stat['remaining']
-            epoch_time = user_lookup_stat['reset']
-            dt_reset = datetime.datetime.fromtimestamp(epoch_time
-                ).strftime('%Y-%m-%d %H:%M:%S')
-            print 'Try again at ' + str(dt_reset)
-            break
-        else:
-            print 'Error: ' + d['message']
-            continue
-    users.append(user)
-    print(len(users))
-
-# using pickle to save the users in a python data file
-import pickle
-pickle.dump(users, open('users1.p', 'wb'))
