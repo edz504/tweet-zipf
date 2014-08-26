@@ -10,7 +10,7 @@ from nltk.probability import FreqDist
 from nltk.probability import ConditionalFreqDist
 
 import tweet_cleaner
-
+import pickle
 #Setting up Twitter API
 twitter_api = twitter.Api(
     consumer_key='qD0K86UokYrYbqhXa4I0NWQ4i',
@@ -36,9 +36,10 @@ def getUserTweetWordFreqDist(sn):
                 count=200,
                 max_id=oldest_id)
         print 'Pulled in ' + str(len(this_user_tweets)) + ' new tweets'
-        if len(this_user_tweets) == 1:
+        if len(this_user_tweets) <= 1:
             keep_em_coming = False
-        oldest_id = min([t.id for t in this_user_tweets])
+        else:
+            oldest_id = min([t.id for t in this_user_tweets])
         user_tweets += this_user_tweets
         
     user_tweets_str = [t.text.encode('utf-8') for t in user_tweets]
@@ -77,3 +78,9 @@ sn = 'edz504'
 NUM_PLOT = 80
 plotUserTopNWords(sn=sn, n=NUM_PLOT)
 
+users = pickle.load(open('users.p', 'rb'))
+sns = [u.screen_name for u in users]
+
+for i in range(5, 10):
+    sn = sns[i]
+    plotUserTopNWords(sn=sn, n=NUM_PLOT)

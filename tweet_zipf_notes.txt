@@ -6,3 +6,8 @@ We want to aggregate a large number of tweets and investigate a variety of quest
 - if not, what kind of distribution do these ranked frequencies follow?  is this distribution similar when separating by geographic area?  by user?
 - how can we compare a user's personal "language" to different dialects of English?
     - could we try "translating" a text in English to a user's own personal language based on word counts?
+
+
+Problems with our aggregated users:
+    - not all tweeting in English...obviously
+    - many empty
