@@ -1,5 +1,4 @@
 import re
-re. stuff
 def remove_sn(t):
     rep = 0
     ats_cleaned = True

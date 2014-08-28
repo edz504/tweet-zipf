@@ -11,7 +11,9 @@ from nltk.probability import ConditionalFreqDist
 import pickle
 import ast
 import datetime
+import re
 from nltk.corpus import brown, reuters, nps_chat, webtext
+from scipy import stats
 
 import tweet_cleaner
 import tweet_retriever
@@ -19,7 +21,7 @@ import tweet_retriever
 def plotUserTopNWords(sn, n, fdist=None):
     if fdist is None:
         print 'Getting tweets for ' + sn
-        fdist = getUserTweetWordFreqDist(sn)
+        fdist = tweet_retriever.getUserTweetWordFreqDist(sn)
     fsort_tuple = sorted(fdist.items(), key=operator.itemgetter(1),
         reverse=True)
     freqs_np_vals = np.array([t[1] for t in fsort_tuple])[0:n]
@@ -39,7 +41,6 @@ NUM_PLOT = 80
 plotUserTopNWords(sn=sn, n=NUM_PLOT)
 
 users = pickle.load(open('users1.p', 'rb'))
-sns = [u.screen_name for u in users]
 
 #### Does an individual user follow Zipf's Law?           ####
 #### If not, do they all follow a different distribution? ####
@@ -69,8 +70,30 @@ pickle.dump([brown_fdist_letters, reut_fdist_letters, nps_fdist_letters],
     open('known_fdist.p', 'wb'))
 
 # looks like brown and reuters follow Zipf's quite well, whereas nps_chat 
-# not so much.
+# not so much.  we can quantify this with an actual fit
+fsort_tuple = sorted(reut_fdist_letters.items(), key=operator.itemgetter(1),
+    reverse=True)
+y_vals = np.array([t[1] for t in fsort_tuple])
+x_vals = np.array(range(1, len(y_vals) + 1))
+plt.plot([np.log(x) for x in x_vals], 
+    [np.log(y) for y in y_vals], 'ro')
+plt.show()
+slope, intercept, r_value, p_value, std_err = stats.linregress(
+    np.log(x_vals.astype(float)),
+    np.log(y_vals.astype(float)))
+print "r-squared:", r_value**2
 
+fsort_tuple = sorted(nps_fdist_letters .items(), key=operator.itemgetter(1),
+    reverse=True)
+y_vals = np.array([t[1] for t in fsort_tuple])
+x_vals = np.array(range(1, len(y_vals) + 1))
+plt.plot([np.log(x) for x in x_vals], 
+    [np.log(y) for y in y_vals], 'ro')
+plt.show()
+slope, intercept, r_value, p_value, std_err = stats.linregress(
+    np.log(x_vals.astype(float)),
+    np.log(y_vals.astype(float)))
+print "r-squared:", r_value**2
 
 # we only want users that have tweeted at least X times
 NUM_TWEET_CUTOFF = 10
