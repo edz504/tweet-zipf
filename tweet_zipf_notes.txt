@@ -1,6 +1,6 @@
 We want to aggregate a large number of tweets and investigate a variety of questions:
 
-- does a random collection of tweets follow Zipf's Law? (aka do the frequencies, when ranked, follow an exponential distribution?)
+- does a random collection of tweets follow Zipf's Law? (aka do the frequencies, when ranked, follow a Zipfian distribution?)
 - if not, does a geographically grouped collection of tweets follow Zipf's Law (local lingo?)
 - if not, does a single user's collection of tweets follow Zipf's Law? (perhaps that user has his/her own "language")
 - if not, what kind of distribution do these ranked frequencies follow?  is this distribution similar when separating by geographic area?  by user?
