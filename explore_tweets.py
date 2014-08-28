@@ -126,6 +126,8 @@ df['statuses_count'] = [u.statuses_count for u in lang_users]
 df['followers_count'] = [u.followers_count for u in lang_users]
 df['following_count'] = [u.friends_count for u in lang_users]
 # make a list comprehension to calculate age in days from Twitter's founding
+# http://www.usatoday.com/story/tech/2014/03/20/twitter-eighth-birthday-first-tweet/6646493/
+# ^ says that March 21st, 2006 is the oldest Tweet
 # df['age'] = [u.followers_count for u in lang_users]
 df['favourites_count'] = [u.favourites_count for u in lang_users]
 df['location'] = [u.location for u in lang_users]
