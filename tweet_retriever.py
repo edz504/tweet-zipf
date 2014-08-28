@@ -13,6 +13,7 @@ import tweet_cleaner
 import pickle
 import ast
 import datetime
+from nltk.corpus import stopwords
 
 #Setting up Twitter API
 twitter_api = twitter.Api(
@@ -70,80 +71,3 @@ def getUserTweetWordFreqDist(sn, user_tweets=None):
 
     fdist = FreqDist(word.lower() for word in user_tweets_tokens)
     return(fdist)
-
-def plotUserTopNWords(sn, n, fdist=None):
-    if fdist is None:
-        print 'Getting tweets for ' + sn
-        fdist = getUserTweetWordFreqDist(sn)
-    fsort_tuple = sorted(fdist.items(), key=operator.itemgetter(1),
-        reverse=True)
-    freqs_np_vals = np.array([t[1] for t in fsort_tuple])[0:n]
-    freqs_np_words = np.array([t[0] for t in fsort_tuple])[0:n]
-    width = .35
-    ind = np.arange(len(freqs_np_vals))
-    plt.title('Ranked Word Counts in the Tweets of ' + sn)
-    plt.bar(ind, freqs_np_vals)
-    plt.xticks(ind + width / 2, freqs_np_words, rotation='vertical')
-    mng = plt.get_current_fig_manager()
-    mng.window.state('zoomed')
-    plt.show()
-
-
-sn = 'perezhilton'
-NUM_PLOT = 80
-plotUserTopNWords(sn=sn, n=NUM_PLOT)
-
-users = pickle.load(open('users1.p', 'rb'))
-sns = [u.screen_name for u in users]
-
-# for i in range(5, 10):
-#     sn = sns[i]
-#     plotUserTopNWords(sn=sn, n=NUM_PLOT)
-
-# average num of characters per words is about 4.5
-# average tweet length is 30
-
-##########
-sn_counter = 0   # how many users parsed
-true_counter = 0 # how many users actually produced tweets we uses 
-total_fdist = {}
-NUM_TWEET_REQ = 1
-##########
-### do NOT rerun that ^^ after we started
-[sn_counter, true_counter, total_fdist] = pickle.load(open('fdist1.p', 'rb'))
-
-for sn in sns[sn_counter:]:
-    try:
-        ut = getUserTweets(sn)
-    except Exception, e:
-        d = ast.literal_eval(str(e))[0]
-        error_code = d['code']
-        if (error_code == 88):
-            print d['message']
-            break
-        else:
-            print 'Error: ' + d['message']
-            continue
-    if (len(ut) >= NUM_TWEET_REQ):
-        fd = getUserTweetWordFreqDist(sn, user_tweets=ut)
-        true_counter += 1
-        total_fdist.update(fd)
-        print sn + " freqs added"
-    else:
-        print sn + " did not meet NUM_TWEET_REQ"
-    sn_counter += 1
-    print "****Processed user " + str(sn_counter) + "****"
-pickle.dump([sn_counter, true_counter, total_fdist],
-    open('fdist1.p', 'wb'))
-
-rl_stat = twitter_api.GetRateLimitStatus()
-user_lookup_stat = rl_stat['resources']['statuses']['/statuses/user_timeline']
-remaining = user_lookup_stat['remaining']
-epoch_time = user_lookup_stat['reset']
-dt_reset = datetime.datetime.fromtimestamp(epoch_time
-    ).strftime('%Y-%m-%d %H:%M:%S')
-print str(remaining) + ' tweets left.  Try again at ' + str(dt_reset)
-
-
-plotUserTopNWords(sn=(str(true_counter) + ' random users'), n=NUM_PLOT,
-    fdist=total_fdist)
