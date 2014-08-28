@@ -12,6 +12,7 @@ from nltk.probability import ConditionalFreqDist
 import tweet_cleaner
 import pickle
 import ast
+import datetime
 
 #Setting up Twitter API
 twitter_api = twitter.Api(
@@ -22,28 +23,34 @@ twitter_api = twitter.Api(
 
 def getUserTweets(sn):
     user = twitter_api.GetUser(screen_name=sn)
-    user_tweets = []
-    keep_em_coming = True
+    if (user.statuses_count < 1): # don't bother going through if we know
+    # the user doesn't have any tweets
+        return([])
+    if (not user.protected):
+        user_tweets = []
+        keep_em_coming = True
 
-    while (keep_em_coming):
-        # for our first time, no max_id
-        if len(user_tweets) == 0:
-            this_user_tweets = twitter_api.GetUserTimeline(
-                screen_name=sn,
-                count=200)
-        else:
-            this_user_tweets = twitter_api.GetUserTimeline(
-                screen_name=sn,
-                count=200,
-                max_id=oldest_id)
-        print 'Pulled in ' + str(len(this_user_tweets)) + ' new tweets'
-        if len(this_user_tweets) <= 1:
-            keep_em_coming = False
-        else:
-            oldest_id = min([t.id for t in this_user_tweets])
-        user_tweets += this_user_tweets
+        while (keep_em_coming):
+            # for our first time, no max_id
+            if len(user_tweets) == 0:
+                this_user_tweets = twitter_api.GetUserTimeline(
+                    screen_name=sn,
+                    count=200)
+            else:
+                this_user_tweets = twitter_api.GetUserTimeline(
+                    screen_name=sn,
+                    count=200,
+                    max_id=oldest_id)
+            print 'Pulled in ' + str(len(this_user_tweets)) + ' new tweets'
+            if len(this_user_tweets) <= 1:
+                keep_em_coming = False
+            else:
+                oldest_id = min([t.id for t in this_user_tweets])
+            user_tweets += this_user_tweets
 
-    return(user_tweets)
+        return(user_tweets)
+    else: # return empty list for protected users
+        return([])
 
 # supply either a screen name, or a list of tweets
 def getUserTweetWordFreqDist(sn, user_tweets=None):
@@ -51,7 +58,12 @@ def getUserTweetWordFreqDist(sn, user_tweets=None):
         user_tweets = getUserTweets(sn)
     user_tweets_str = [t.text.encode('utf-8') for t in user_tweets]
     user_tweets_clean1 = [tweet_cleaner.remove_sn(t_str1) for t_str1 in user_tweets_str]
+    
+    # bug here with specifics:
+    # 'So funny! I want to listen to this again and again... ( http://t.co/Fwyw0He8)'
     user_tweets_clean2 = [tweet_cleaner.remove_urls(t_str2) for t_str2 in user_tweets_clean1]
+    #
+
     user_tweets_clean3 = [tweet_cleaner.leave_alphanumeric(t_str3) for t_str3 in user_tweets_clean2]
     user_tweets_collapse = ''.join(user_tweets_clean3)
     user_tweets_tokens = nltk.word_tokenize(user_tweets_collapse)
@@ -77,7 +89,7 @@ def plotUserTopNWords(sn, n, fdist=None):
     plt.show()
 
 
-sn = 'edz504'
+sn = 'perezhilton'
 NUM_PLOT = 80
 plotUserTopNWords(sn=sn, n=NUM_PLOT)
 
@@ -91,12 +103,16 @@ sns = [u.screen_name for u in users]
 # average num of characters per words is about 4.5
 # average tweet length is 30
 
-sn_counter = 0
-true_counter = 0
+##########
+sn_counter = 0   # how many users parsed
+true_counter = 0 # how many users actually produced tweets we uses 
 total_fdist = {}
 NUM_TWEET_REQ = 1
+##########
+### do NOT rerun that ^^ after we started
+[sn_counter, true_counter, total_fdist] = pickle.load(open('fdist1.p', 'rb'))
 
-for sn in sns[1:10]:
+for sn in sns[sn_counter:]:
     try:
         ut = getUserTweets(sn)
     except Exception, e:
@@ -109,10 +125,25 @@ for sn in sns[1:10]:
             print 'Error: ' + d['message']
             continue
     if (len(ut) >= NUM_TWEET_REQ):
-        fd = getUserTweetWordFreqDist(sn)
+        fd = getUserTweetWordFreqDist(sn, user_tweets=ut)
         true_counter += 1
         total_fdist.update(fd)
         print sn + " freqs added"
     else:
         print sn + " did not meet NUM_TWEET_REQ"
     sn_counter += 1
+    print "****Processed user " + str(sn_counter) + "****"
+pickle.dump([sn_counter, true_counter, total_fdist],
+    open('fdist1.p', 'wb'))
+
+rl_stat = twitter_api.GetRateLimitStatus()
+user_lookup_stat = rl_stat['resources']['statuses']['/statuses/user_timeline']
+remaining = user_lookup_stat['remaining']
+epoch_time = user_lookup_stat['reset']
+dt_reset = datetime.datetime.fromtimestamp(epoch_time
+    ).strftime('%Y-%m-%d %H:%M:%S')
+print str(remaining) + ' tweets left.  Try again at ' + str(dt_reset)
+
+
+plotUserTopNWords(sn=(str(true_counter) + ' random users'), n=NUM_PLOT,
+    fdist=total_fdist)
