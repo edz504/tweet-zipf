@@ -79,3 +79,12 @@ def get_language(input_text):
  
     likelihoods = get_language_likelihood(input_text)
     return sorted(likelihoods, key=likelihoods.get, reverse=True)[0]
+
+# we could use user.lang, but probably useless because (from API):
+
+# The BCP 47 code for the user's self-declared user interface language. 
+# May or may not have anything to do with the content of their Tweets.
+# Examples:
+# "lang": "en"
+# "lang": "msa"
+# "lang": "zh-cn"

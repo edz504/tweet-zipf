@@ -21,12 +21,11 @@ twitter_api = twitter.Api(
     access_token_key='431244726-M96XnETmwt7fZC3Dkbuy0jsUNOpFAjFZru4z4gCZ',
     access_token_secret='S4kbwMkUrZJfYmbsohaepnnbIMd1YfEZb4IaJoUQtDQ4a')
 
-def getUserTweets(sn):
-    user = twitter_api.GetUser(screen_name=sn)
-    if (user.statuses_count < 1): # don't bother going through if we know
+def getUserTweets(u):
+    if (u.statuses_count < 1): # don't bother going through if we know
     # the user doesn't have any tweets
         return([])
-    if (not user.protected):
+    if (not u.protected):
         user_tweets = []
         keep_em_coming = True
 
@@ -34,11 +33,11 @@ def getUserTweets(sn):
             # for our first time, no max_id
             if len(user_tweets) == 0:
                 this_user_tweets = twitter_api.GetUserTimeline(
-                    screen_name=sn,
+                    screen_name=u.screen_name,
                     count=200)
             else:
                 this_user_tweets = twitter_api.GetUserTimeline(
-                    screen_name=sn,
+                    screen_name=u.screen_name,
                     count=200,
                     max_id=oldest_id)
             print 'Pulled in ' + str(len(this_user_tweets)) + ' new tweets'
@@ -53,9 +52,9 @@ def getUserTweets(sn):
         return([])
 
 # supply either a screen name, or a list of tweets
-def getUserTweetWordFreqDist(sn, user_tweets=None):
+def getUserTweetWordFreqDist(u, user_tweets=None):
     if user_tweets is None:
-        user_tweets = getUserTweets(sn)
+        user_tweets = getUserTweets(u)
     user_tweets_str = [t.text.encode('utf-8') for t in user_tweets]
     user_tweets_clean1 = [tweet_cleaner.remove_sn(t_str1) for t_str1 in user_tweets_str]
     
