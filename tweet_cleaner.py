@@ -1,9 +1,5 @@
 import re
-
-# we included replies, and we want to keep them, but we don't want to include
-# other people's screen_names in the string
-# basic function to remove screen name
-# has not been scrutinized, will probably fail on some stuff
+re. stuff
 def remove_sn(t):
     rep = 0
     ats_cleaned = True

@@ -7,7 +7,6 @@ import pylab as pl
 import nltk
 import operator
 from nltk.probability import FreqDist
-from nltk.probability import ConditionalFreqDist
 
 import tweet_cleaner
 import pickle
