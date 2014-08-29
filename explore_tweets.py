@@ -14,6 +14,7 @@ import datetime
 import re
 from nltk.corpus import brown, reuters, nps_chat, webtext
 from scipy import stats
+from dateutil import parser
 
 import tweet_cleaner
 import tweet_retriever
@@ -25,8 +26,10 @@ twitter_api = twitter.Api(
     access_token_key='431244726-M96XnETmwt7fZC3Dkbuy0jsUNOpFAjFZru4z4gCZ',
     access_token_secret='S4kbwMkUrZJfYmbsohaepnnbIMd1YfEZb4IaJoUQtDQ4a')
 
-def plotUserTopNWords(u, n, fdist=None):
-    if fdist is None:
+def plotUserTopNWords(n, u=None, title=None, fdist=None):
+    if title is None and (u is not None):
+        title = u.screen_name
+    if fdist is None and (u is not None):
         print 'Getting tweets for ' + u.screen_name
         fdist = tweet_retriever.getUserTweetWordFreqDist(u)
     fsort_tuple = sorted(fdist.items(), key=operator.itemgetter(1),
@@ -35,7 +38,7 @@ def plotUserTopNWords(u, n, fdist=None):
     freqs_np_words = np.array([t[0] for t in fsort_tuple])[0:n]
     width = .35
     ind = np.arange(len(freqs_np_vals))
-    plt.title(u.screen_name)
+    plt.title(title)
     plt.bar(ind, freqs_np_vals)
     plt.xticks(ind + width / 2, freqs_np_words, rotation='vertical')
     mng = plt.get_current_fig_manager()
@@ -62,15 +65,15 @@ def wordOnlyFDist(fdist):
     open('known_fdist.p', 'rb'))
 
 # brown_fdist = nltk.FreqDist(w.lower() for w in brown.words())
-plotUserTopNWords(sn='Brown Corpus', n=NUM_PLOT, 
+plotUserTopNWords(n=NUM_PLOT, title='Brown Corpus',
     fdist=wordOnlyFDist(brown_fdist))
 
 # reut_fdist = nltk.FreqDist(w.lower() for w in reuters.words())
-plotUserTopNWords(sn='Reuters Corpus', n=NUM_PLOT, 
+plotUserTopNWords(n=NUM_PLOT, title='Reuters Corpus', 
     fdist=wordOnlyFDist(reut_fdist))
 
 # nps_fdist = nltk.FreqDist(w.lower() for w in nps_chat.words())
-plotUserTopNWords(sn='nps_chat Corpus', n=NUM_PLOT, 
+plotUserTopNWords(n=NUM_PLOT, title='nps_chat Corpus', 
     fdist=wordOnlyFDist(nps_fdist))
 
 # just so we don't have to recalculate those fdists
@@ -125,23 +128,42 @@ df = pd.DataFrame(index=[u.screen_name for u in lang_users],
 df['statuses_count'] = [u.statuses_count for u in lang_users]
 df['followers_count'] = [u.followers_count for u in lang_users]
 df['following_count'] = [u.friends_count for u in lang_users]
-# make a list comprehension to calculate age in days from Twitter's founding
-# http://www.usatoday.com/story/tech/2014/03/20/twitter-eighth-birthday-first-tweet/6646493/
-# ^ says that March 21st, 2006 is the oldest Tweet
-# df['age'] = [u.followers_count for u in lang_users]
 df['favourites_count'] = [u.favourites_count for u in lang_users]
 df['location'] = [u.location for u in lang_users]
 df['verified'] = [u.verified for u in lang_users]
+# make a list comprehension to calculate age in days from Twitter's founding
+# http://www.usatoday.com/story/tech/2014/03/20/twitter-eighth-birthday-first-tweet/6646493/
+# ^ says that March 21st, 2006 is the oldest Tweet
+import pytz
+epoch = parser.parse("Mar 21 2006 13:33:00").replace(tzinfo=pytz.UTC)
+df['age_days'] = [(parser.parse(u.created_at) - epoch).days for u in lang_users]
 
+i = 0
 for u in lang_users:
     # get as many tweets as possible for that user, assembling the tweets 
     # into a corpus, clean and create an fdist
-    fdist = tweet_retriever.getUserTweetWordFreqDist(u)
+    try:
+        # the getUserTweetWordFreqDist can retrieve the tweets on its own,
+        # but we also want to see how many tweets we use for the fit
+        tweets = tweet_retriever.getUserTweets(u)
+        fdist = tweet_retriever.getUserTweetWordFreqDist(u, tweets)
+    except Exception, e:
+        d = ast.literal_eval(str(e))[0]
+        error_code = d['code']
+        if (error_code == 88):
+            print d['message']
+        print 'Currently, u = ' + u.screen_name
+        #break
     fdist_wordsOnly = wordOnlyFDist(fdist)
     # fit the fdist to Zipf's
     slope, intercept, r_squared = zipfFit(fdist_wordsOnly, 
         u.screen_name)
     # record stats
+    df['num_fit'][i] = len(set(tweets))
+    df['r_squared'][i] = r_squared
+    df['slope'][i] = slope
+    df['intercept'] = intercept
+    i += 1
 
 # if we want to do more specific analysis w.r.t these variables and the
 # actual fdists (not just their Zipf-fit, we will have these stored in a df)
