@@ -40,7 +40,8 @@ def getUserTweets(u):
                     screen_name=u.screen_name,
                     count=200,
                     max_id=oldest_id)
-            print 'Pulled in ' + str(len(this_user_tweets)) + ' new tweets'
+            # print 'Pulled in ' + str(len(this_user_tweets)) + ' new tweets'
+            print '.'
             if len(this_user_tweets) <= 1:
                 keep_em_coming = False
             else:

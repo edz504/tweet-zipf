@@ -77,8 +77,8 @@ plotUserTopNWords(n=NUM_PLOT, title='nps_chat Corpus',
     fdist=wordOnlyFDist(nps_fdist))
 
 # just so we don't have to recalculate those fdists
-# pickle.dump([brown_fdist, reut_fdist, nps_fdist],
-#     open('known_fdist.p', 'wb'))
+pickle.dump([brown_fdist, reut_fdist, nps_fdist],
+    open('known_fdist.p', 'wb'))
 
 def zipfFit(fdist, name, pl=False, pr=False, ret=True):
     fsort_tuple = sorted(fdist.items(), key=operator.itemgetter(1),
@@ -114,32 +114,37 @@ fdist = tweet_retriever.getUserTweetWordFreqDist(
     twitter_api.GetUser(screen_name='perezhilton'))
 zipfFit(wordOnlyFDist(fdist), 'perezhilton', pl=True, pr=True, ret=False)
 
+
+
 # we only want users that have tweeted at least X times
 NUM_TWEET_CUTOFF = 1
 lang_users = [u for u in users if u.statuses_count > NUM_TWEET_CUTOFF]
-
+# also, filter out protected peeps
+end_users = [u for u in lang_users if not u.protected]
 col = [
     'num_fit', 'r_squared', 'slope', 'intercept', 'statuses_count', 
-    'followers_count', 'following_count', 'age',
+    'followers_count', 'following_count', 'age_days',
     'favourites_count', 'location', 'verified'
 ]
-df = pd.DataFrame(index=[u.screen_name for u in lang_users],
+df = pd.DataFrame(index=[u.screen_name for u in end_users],
     columns=col)
-df['statuses_count'] = [u.statuses_count for u in lang_users]
-df['followers_count'] = [u.followers_count for u in lang_users]
-df['following_count'] = [u.friends_count for u in lang_users]
-df['favourites_count'] = [u.favourites_count for u in lang_users]
-df['location'] = [u.location for u in lang_users]
-df['verified'] = [u.verified for u in lang_users]
+df['statuses_count'] = [u.statuses_count for u in end_users]
+df['followers_count'] = [u.followers_count for u in end_users]
+df['following_count'] = [u.friends_count for u in end_users]
+df['favourites_count'] = [u.favourites_count for u in end_users]
+df['location'] = [u.location for u in end_users]
+df['verified'] = [u.verified for u in end_users]
 # make a list comprehension to calculate age in days from Twitter's founding
 # http://www.usatoday.com/story/tech/2014/03/20/twitter-eighth-birthday-first-tweet/6646493/
 # ^ says that March 21st, 2006 is the oldest Tweet
 import pytz
 epoch = parser.parse("Mar 21 2006 13:33:00").replace(tzinfo=pytz.UTC)
-df['age_days'] = [(parser.parse(u.created_at) - epoch).days for u in lang_users]
+df['age_days'] = [(parser.parse(u.created_at) - epoch).days for u in end_users]
 
 i = 0
-for u in lang_users:
+STOPPED = 0
+
+for u in end_users[STOPPED:]:
     # get as many tweets as possible for that user, assembling the tweets 
     # into a corpus, clean and create an fdist
     try:
@@ -152,8 +157,9 @@ for u in lang_users:
         error_code = d['code']
         if (error_code == 88):
             print d['message']
-        print 'Currently, u = ' + u.screen_name
-        #break
+        print 'Currently, u = ' + u.screen_name + ', i = ' + str(i)
+        STOPPED = i
+        break
     fdist_wordsOnly = wordOnlyFDist(fdist)
     # fit the fdist to Zipf's
     slope, intercept, r_squared = zipfFit(fdist_wordsOnly, 
@@ -162,8 +168,19 @@ for u in lang_users:
     df['num_fit'][i] = len(set(tweets))
     df['r_squared'][i] = r_squared
     df['slope'][i] = slope
-    df['intercept'] = intercept
+    df['intercept'][i] = intercept
     i += 1
+    print 'Finished <' + u.screen_name + '>'
+pickle.dump([STOPPED, df], open('zipf_fit_df.p', 'wb'))
+
+
+rl_stat = twitter_api.GetRateLimitStatus()
+user_lookup_stat = rl_stat['resources']['statuses']['/statuses/user_timeline']
+remaining = user_lookup_stat['remaining']
+epoch_time = user_lookup_stat['reset']
+dt_reset = datetime.datetime.fromtimestamp(epoch_time
+    ).strftime('%Y-%m-%d %H:%M:%S')
+print str(remaining) + ' requests left.  Try again at ' + str(dt_reset)
 
 # if we want to do more specific analysis w.r.t these variables and the
 # actual fdists (not just their Zipf-fit, we will have these stored in a df)
