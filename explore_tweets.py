@@ -15,6 +15,7 @@ import re
 from nltk.corpus import brown, reuters, nps_chat, webtext
 from scipy import stats
 from dateutil import parser
+import time
 
 import tweet_cleaner
 import tweet_retriever
@@ -160,6 +161,9 @@ for u in end_users[STOPPED:]:
         print 'Currently, u = ' + u.screen_name + ', i = ' + str(i)
         STOPPED = i
         break
+        # print 'Pausing for 15 minutes...'
+        # time.sleep(15 * 60)
+        # print 'Starting again'
     fdist_wordsOnly = wordOnlyFDist(fdist)
     # fit the fdist to Zipf's
     slope, intercept, r_squared = zipfFit(fdist_wordsOnly, 
@@ -184,3 +188,7 @@ print str(remaining) + ' requests left.  Try again at ' + str(dt_reset)
 
 # if we want to do more specific analysis w.r.t these variables and the
 # actual fdists (not just their Zipf-fit, we will have these stored in a df)
+
+
+# definitely graphing with R
+# http://www.r-bloggers.com/ggplot2-in-python-a-major-barrier-broken/
