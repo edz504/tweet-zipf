@@ -16,6 +16,7 @@ from nltk.corpus import brown, reuters, nps_chat, webtext
 from scipy import stats
 from dateutil import parser
 import time
+import ggplot
 
 import tweet_cleaner
 import tweet_retriever
@@ -160,10 +161,16 @@ for u in end_users[STOPPED:]:
             print d['message']
         print 'Currently, u = ' + u.screen_name + ', i = ' + str(i)
         STOPPED = i
-        break
-        # print 'Pausing for 15 minutes...'
-        # time.sleep(15 * 60)
-        # print 'Starting again'
+        # break
+        print 'Pausing for 15 minutes...'
+        time.sleep(5 * 60)
+        print '.'
+        time.sleep(5 * 60)
+        print '.'
+        time.sleep(5 * 60)
+        print 'Re-finding tweets'
+        tweets = tweet_retriever.getUserTweets(u)
+        fdist = tweet_retriever.getUserTweetWordFreqDist(u, tweets)
     fdist_wordsOnly = wordOnlyFDist(fdist)
     # fit the fdist to Zipf's
     slope, intercept, r_squared = zipfFit(fdist_wordsOnly, 
@@ -192,3 +199,5 @@ print str(remaining) + ' requests left.  Try again at ' + str(dt_reset)
 
 # definitely graphing with R
 # http://www.r-bloggers.com/ggplot2-in-python-a-major-barrier-broken/
+# or 
+# http://blog.yhathq.com/posts/ggplot-for-python.html
