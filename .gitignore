@@ -1,3 +1,5 @@
 *.p
 *.pyc
 twitter_api.txt
+*.html
+*.ipynb
