@@ -12,29 +12,13 @@ import pickle
 import ast
 import datetime
 import re
-from nltk.corpus import brown, reuters, nps_chat, webtext
-from scipy import stats
+from nltk.corpus import brown, reuters, nps_chat
+    
 from dateutil import parser
 import time
 import ggplot
 
-import tweet_cleaner
-import tweet_retriever
-
-#Setting up Twitter API
-mine = [s.strip() for s in open('twitter_api.txt', 'rb').readlines()]
-twitter_api = twitter.Api(
-    consumer_key=mine[0],
-    consumer_secret=mine[1],
-    access_token_key=mine[2],
-    access_token_secret=mine[3])
-
-def plotUserTopNWords(n, u=None, title=None, fdist=None):
-    if title is None and (u is not None):
-        title = u.screen_name
-    if fdist is None and (u is not None):
-        print 'Getting tweets for ' + u.screen_name
-        fdist = tweet_retriever.getUserTweetWordFreqDist(u)
+def plotFdist(n, title=None, fdist=None):
     fsort_tuple = sorted(fdist.items(), key=operator.itemgetter(1),
         reverse=True)
     freqs_np_vals = np.array([t[1] for t in fsort_tuple])[0:n]
@@ -48,17 +32,9 @@ def plotUserTopNWords(n, u=None, title=None, fdist=None):
     mng.window.state('zoomed')
     plt.show()
 
-
-sn = 'perezhilton'
-NUM_PLOT = 80
-plotUserTopNWords(u=twitter_api.GetUser(screen_name=sn),
-    n=NUM_PLOT)
-
-users = pickle.load(open('users1.p', 'rb'))
-
 # first, explore Zipf's Law on known corpora
 def wordOnlyFDist(fdist):
-    # only leave numbers (does the rest count as "language"? tricky)
+    # only leave letters (does the rest count as "language"? tricky)
     word_only_keys = [k for k in fdist.keys() if re.search(r'^[a-zA-Z]+$',
         k)]
     return({ key : fdist[key] for key in word_only_keys })
@@ -67,16 +43,17 @@ def wordOnlyFDist(fdist):
 [brown_fdist, reut_fdist, nps_fdist] = pickle.load(
     open('known_fdist.p', 'rb'))
 
+NUM_PLOT = 50
 # brown_fdist = nltk.FreqDist(w.lower() for w in brown.words())
-plotUserTopNWords(n=NUM_PLOT, title='Brown Corpus',
+plotFdist(n=NUM_PLOT, title='Brown Corpus',
     fdist=wordOnlyFDist(brown_fdist))
 
 # reut_fdist = nltk.FreqDist(w.lower() for w in reuters.words())
-plotUserTopNWords(n=NUM_PLOT, title='Reuters Corpus', 
+plotFdist(n=NUM_PLOT, title='Reuters Corpus', 
     fdist=wordOnlyFDist(reut_fdist))
 
 # nps_fdist = nltk.FreqDist(w.lower() for w in nps_chat.words())
-plotUserTopNWords(n=NUM_PLOT, title='nps_chat Corpus', 
+plotFdist(n=NUM_PLOT, title='nps_chat Corpus', 
     fdist=wordOnlyFDist(nps_fdist))
 
 # just so we don't have to recalculate those fdists
@@ -112,6 +89,46 @@ zipfFit(wordOnlyFDist(nps_fdist), 'nps_chat', pl=True, pr=True, ret=False)
 #### If so, what kind of users are likely to follow Zipf's Law?             ####
 #### Does a compilation of random tweets follow Zipf's Law?                 ####
 #### Does a set of random tweets geographically linked follow Zipf's Law?   ####
+
+import tweet_cleaner
+import tweet_retriever
+
+#Setting up Twitter API
+mine = [s.strip() for s in open('twitter_api.txt', 'rb').readlines()]
+twitter_api = twitter.Api(
+    consumer_key=mine[0],
+    consumer_secret=mine[1],
+    access_token_key=mine[2],
+    access_token_secret=mine[3])
+
+
+
+def plotUserTopNWords(n, u=None, title=None, fdist=None):
+    if title is None and (u is not None):
+        title = u.screen_name
+    if fdist is None and (u is not None):
+        print 'Getting tweets for ' + u.screen_name
+        fdist = tweet_retriever.getUserTweetWordFreqDist(u)
+    fsort_tuple = sorted(fdist.items(), key=operator.itemgetter(1),
+        reverse=True)
+    freqs_np_vals = np.array([t[1] for t in fsort_tuple])[0:n]
+    freqs_np_words = np.array([t[0] for t in fsort_tuple])[0:n]
+    width = .35
+    ind = np.arange(len(freqs_np_vals))
+    plt.title(title)
+    plt.bar(ind, freqs_np_vals)
+    plt.xticks(ind + width / 2, freqs_np_words, rotation='vertical')
+    mng = plt.get_current_fig_manager()
+    mng.window.state('zoomed')
+    plt.show()
+
+
+sn = 'perezhilton'
+NUM_PLOT = 80
+plotUserTopNWords(u=twitter_api.GetUser(screen_name=sn),
+    n=NUM_PLOT)
+
+users = pickle.load(open('users1.p', 'rb'))
 
 fdist = tweet_retriever.getUserTweetWordFreqDist(
     twitter_api.GetUser(screen_name='perezhilton'))
