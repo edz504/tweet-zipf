@@ -60,6 +60,8 @@ plotFdist(n=NUM_PLOT, title='nps_chat Corpus',
 pickle.dump([brown_fdist, reut_fdist, nps_fdist],
     open('known_fdist.p', 'wb'))
 
+from scipy import stats
+
 def zipfFit(fdist, name, pl=False, pr=False, ret=True):
     fsort_tuple = sorted(fdist.items(), key=operator.itemgetter(1),
     reverse=True)
