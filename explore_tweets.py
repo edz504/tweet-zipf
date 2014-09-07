@@ -182,6 +182,7 @@ for u in end_users[STOPPED:]:
         print 'Currently, u = ' + u.screen_name + ', i = ' + str(i)
         STOPPED = i
         # break
+        pickle.dump([STOPPED, df], open('zipf_fit_df.p', 'wb')) # save to pickle
         print 'Pausing for 15 minutes...'
         time.sleep(5 * 60)
         print '.'
@@ -202,7 +203,6 @@ for u in end_users[STOPPED:]:
     df['intercept'][i] = intercept
     i += 1
     print 'Finished <' + u.screen_name + '>'
-pickle.dump([STOPPED, df], open('zipf_fit_df.p', 'wb'))
 
 
 rl_stat = twitter_api.GetRateLimitStatus()
