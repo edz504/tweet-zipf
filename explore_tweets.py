@@ -142,7 +142,7 @@ zipfFit(wordOnlyFDist(fdist), 'perezhilton', pl=True, pr=True, ret=False)
 NUM_TWEET_CUTOFF = 1
 lang_users = [u for u in users if u.statuses_count > NUM_TWEET_CUTOFF]
 # also, filter out protected peeps
-end_users = [u for u in lang_users if not u.protected]
+end_users = [u for u in lang_users if (not u.protected)]
 col = [
     'num_fit', 'r_squared', 'slope', 'intercept', 'statuses_count', 
     'followers_count', 'following_count', 'age_days',
@@ -182,7 +182,8 @@ for u in end_users[STOPPED:]:
         print 'Currently, u = ' + u.screen_name + ', i = ' + str(i)
         STOPPED = i
         # break
-        pickle.dump([STOPPED, df], open('zipf_fit_df.p', 'wb')) # save to pickle
+        # save to pickle
+        pickle.dump([STOPPED, df], open('zipf_fit_df.p', 'wb')) 
         print 'Pausing for 15 minutes...'
         time.sleep(5 * 60)
         print '.'

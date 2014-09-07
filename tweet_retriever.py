@@ -14,6 +14,8 @@ import ast
 import datetime
 from nltk.corpus import stopwords
 
+import tweet_cleaner
+
 #Setting up Twitter API
 mine = [s.strip() for s in open('twitter_api.txt', 'rb').readlines()]
 twitter_api = twitter.Api(
@@ -26,7 +28,7 @@ def getUserTweets(u):
     if (u.statuses_count < 1 or u.protected): # don't bother going through if we know the user doesn't have any tweets
         # or if they're protected
         return([])
-    else (not u.protected):
+    else:
         user_tweets = []
         keep_em_coming = True
 
