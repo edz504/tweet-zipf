@@ -1716,21 +1716,22 @@ In&nbsp;[1]:
 <span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="kn">as</span> <span class="nn">plt</span>
 <span class="kn">import</span> <span class="nn">pylab</span> <span class="kn">as</span> <span class="nn">pl</span>
 <span class="kn">import</span> <span class="nn">nltk</span>
+<span class="kn">from</span> <span class="nn">nltk.probability</span> <span class="kn">import</span> <span class="n">FreqDist</span>
 <span class="kn">import</span> <span class="nn">re</span><span class="o">,</span> <span class="nn">operator</span>
 <span class="kn">from</span> <span class="nn">nltk.corpus</span> <span class="kn">import</span> <span class="n">brown</span><span class="p">,</span> <span class="n">reuters</span><span class="p">,</span> <span class="n">nps_chat</span>
 
 <span class="k">def</span> <span class="nf">plotFdist</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">fdist</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
-    <span class="n">pl</span><span class="o">.</span><span class="n">rcParams</span><span class="p">[</span><span class="s">&#39;figure.figsize&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mf">20.0</span><span class="p">,</span> <span class="mf">6.0</span><span class="p">)</span>
     <span class="n">fsort_tuple</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">fdist</span><span class="o">.</span><span class="n">items</span><span class="p">(),</span> <span class="n">key</span><span class="o">=</span><span class="n">operator</span><span class="o">.</span><span class="n">itemgetter</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span>
         <span class="n">reverse</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
     <span class="n">freqs_np_vals</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">t</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">fsort_tuple</span><span class="p">])[</span><span class="mi">0</span><span class="p">:</span><span class="n">n</span><span class="p">]</span>
     <span class="n">freqs_np_words</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">t</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">fsort_tuple</span><span class="p">])[</span><span class="mi">0</span><span class="p">:</span><span class="n">n</span><span class="p">]</span>
+    
+    <span class="n">pl</span><span class="o">.</span><span class="n">rcParams</span><span class="p">[</span><span class="s">&#39;figure.figsize&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mf">20.0</span><span class="p">,</span> <span class="mf">6.0</span><span class="p">)</span>
     <span class="n">width</span> <span class="o">=</span> <span class="o">.</span><span class="mi">35</span>
     <span class="n">ind</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">freqs_np_vals</span><span class="p">))</span>
     <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="n">title</span><span class="p">)</span>
     <span class="n">plt</span><span class="o">.</span><span class="n">bar</span><span class="p">(</span><span class="n">ind</span><span class="p">,</span> <span class="n">freqs_np_vals</span><span class="p">)</span>
     <span class="n">plt</span><span class="o">.</span><span class="n">xticks</span><span class="p">(</span><span class="n">ind</span> <span class="o">+</span> <span class="n">width</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span> <span class="n">freqs_np_words</span><span class="p">,</span> <span class="n">rotation</span><span class="o">=</span><span class="s">&#39;vertical&#39;</span><span class="p">)</span>
-    <span class="n">pl</span><span class="o">.</span><span class="n">rcParams</span><span class="p">[</span><span class="s">&#39;figure.figsize&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">10</span>
     <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
     
 <span class="k">def</span> <span class="nf">wordOnlyFDist</span><span class="p">(</span><span class="n">fdist</span><span class="p">):</span>
@@ -1752,9 +1753,9 @@ In&nbsp;[2]:
 </div>
 <div class="inner_cell">
     <div class="input_area">
-<div class="highlight"><pre><span class="n">brown_fdist</span> <span class="o">=</span> <span class="n">nltk</span><span class="o">.</span><span class="n">FreqDist</span><span class="p">(</span><span class="n">w</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="k">for</span> <span class="n">w</span> <span class="ow">in</span> <span class="n">brown</span><span class="o">.</span><span class="n">words</span><span class="p">())</span>
-<span class="n">reut_fdist</span> <span class="o">=</span> <span class="n">nltk</span><span class="o">.</span><span class="n">FreqDist</span><span class="p">(</span><span class="n">w</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="k">for</span> <span class="n">w</span> <span class="ow">in</span> <span class="n">reuters</span><span class="o">.</span><span class="n">words</span><span class="p">())</span>
-<span class="n">nps_fdist</span> <span class="o">=</span> <span class="n">nltk</span><span class="o">.</span><span class="n">FreqDist</span><span class="p">(</span><span class="n">w</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="k">for</span> <span class="n">w</span> <span class="ow">in</span> <span class="n">nps_chat</span><span class="o">.</span><span class="n">words</span><span class="p">())</span>
+<div class="highlight"><pre><span class="n">brown_fdist</span> <span class="o">=</span> <span class="n">FreqDist</span><span class="p">(</span><span class="n">w</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="k">for</span> <span class="n">w</span> <span class="ow">in</span> <span class="n">brown</span><span class="o">.</span><span class="n">words</span><span class="p">())</span>
+<span class="n">reut_fdist</span> <span class="o">=</span> <span class="n">FreqDist</span><span class="p">(</span><span class="n">w</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="k">for</span> <span class="n">w</span> <span class="ow">in</span> <span class="n">reuters</span><span class="o">.</span><span class="n">words</span><span class="p">())</span>
+<span class="n">nps_fdist</span> <span class="o">=</span> <span class="n">FreqDist</span><span class="p">(</span><span class="n">w</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="k">for</span> <span class="n">w</span> <span class="ow">in</span> <span class="n">nps_chat</span><span class="o">.</span><span class="n">words</span><span class="p">())</span>
 </pre></div>
 
 </div>
@@ -2565,7 +2566,7 @@ AAAAAAAAAAAAAAAAAAAAAAAAAID9wP8DFldO8SYArb0AAAAASUVORK5CYII=
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
 <div class="prompt input_prompt">
-In&nbsp;[6]:
+In&nbsp;[4]:
 </div>
 <div class="inner_cell">
     <div class="input_area">
@@ -2578,7 +2579,7 @@ In&nbsp;[6]:
     <span class="n">x_vals</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">y_vals</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">))</span>
     <span class="k">if</span> <span class="n">toPlot</span><span class="p">:</span>
         <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
-        <span class="n">pl</span><span class="o">.</span><span class="n">rcParams</span><span class="p">[</span><span class="s">&#39;figure.figsize&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mf">5.0</span><span class="p">,</span> <span class="mf">5.0</span>
+        <span class="n">pl</span><span class="o">.</span><span class="n">rcParams</span><span class="p">[</span><span class="s">&#39;figure.figsize&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mf">5.0</span><span class="p">,</span> <span class="mf">5.0</span><span class="p">)</span>
         <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">x_vals</span><span class="p">],</span> 
             <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">y</span><span class="p">)</span> <span class="k">for</span> <span class="n">y</span> <span class="ow">in</span> <span class="n">y_vals</span><span class="p">],</span> <span class="s">&#39;ro&#39;</span><span class="p">)</span>
         <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s">&#39;log(rank)&#39;</span><span class="p">)</span>
@@ -2601,13 +2602,11 @@ In&nbsp;[6]:
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
 <div class="prompt input_prompt">
-In&nbsp;[7]:
+In&nbsp;[6]:
 </div>
 <div class="inner_cell">
     <div class="input_area">
 <div class="highlight"><pre><span class="n">zipfFit</span><span class="p">(</span><span class="n">wordOnlyFDist</span><span class="p">(</span><span class="n">brown_fdist</span><span class="p">),</span> <span class="s">&#39;brown&#39;</span><span class="p">,</span> <span class="n">toPlot</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">pr</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">ret</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
-<span class="n">zipfFit</span><span class="p">(</span><span class="n">wordOnlyFDist</span><span class="p">(</span><span class="n">reut_fdist</span><span class="p">),</span> <span class="s">&#39;reuters&#39;</span><span class="p">,</span> <span class="n">pr</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">ret</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
-<span class="n">zipfFit</span><span class="p">(</span><span class="n">wordOnlyFDist</span><span class="p">(</span><span class="n">nps_fdist</span><span class="p">),</span> <span class="s">&#39;nps_chat&#39;</span><span class="p">,</span> <span class="n">pr</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">ret</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
 </pre></div>
 
 </div>
@@ -2790,6 +2789,37 @@ hZsvAo9gl3EAOB0LcRGRUBntfDwCOxN0gnP/eNIFnHI6lPQp5VLlVKSRsHkCO4C1FriN9HH+67Eq
 <div class="output_subarea output_stream output_stdout output_text">
 <pre>
 log-log r-squared for brown: 0.971412066095
+
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">
+In&nbsp;[7]:
+</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class="highlight"><pre><span class="n">zipfFit</span><span class="p">(</span><span class="n">wordOnlyFDist</span><span class="p">(</span><span class="n">reut_fdist</span><span class="p">),</span> <span class="s">&#39;reuters&#39;</span><span class="p">,</span> <span class="n">pr</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">ret</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+<span class="n">zipfFit</span><span class="p">(</span><span class="n">wordOnlyFDist</span><span class="p">(</span><span class="n">nps_fdist</span><span class="p">),</span> <span class="s">&#39;nps_chat&#39;</span><span class="p">,</span> <span class="n">pr</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">ret</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area"><div class="prompt"></div>
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>
 log-log r-squared for reuters: 0.977601127158
 log-log r-squared for nps_chat: 0.961693866368
 
@@ -2886,7 +2916,7 @@ In&nbsp;[9]:
 
 <div class="output_text output_subarea output_pyout">
 <pre>
-[814, 219156]
+[815, 219537]
 </pre>
 </div>
 
@@ -3083,9 +3113,9 @@ In&nbsp;[14]:
     <span class="k">if</span> <span class="n">user_tweets</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
         <span class="n">user_tweets</span> <span class="o">=</span> <span class="n">getUserTweets</span><span class="p">(</span><span class="n">u</span><span class="p">)</span>
     <span class="n">user_tweets_str</span> <span class="o">=</span> <span class="p">[</span><span class="n">t</span><span class="o">.</span><span class="n">text</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s">&#39;utf-8&#39;</span><span class="p">)</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">user_tweets</span><span class="p">]</span>
-    <span class="n">user_tweets_clean1</span> <span class="o">=</span> <span class="p">[</span><span class="n">tweet_cleaner</span><span class="o">.</span><span class="n">remove_sn</span><span class="p">(</span><span class="n">t_str1</span><span class="p">)</span> <span class="k">for</span> <span class="n">t_str1</span> <span class="ow">in</span> <span class="n">user_tweets_str</span><span class="p">]</span>
-    <span class="n">user_tweets_clean2</span> <span class="o">=</span> <span class="p">[</span><span class="n">tweet_cleaner</span><span class="o">.</span><span class="n">remove_urls</span><span class="p">(</span><span class="n">t_str2</span><span class="p">)</span> <span class="k">for</span> <span class="n">t_str2</span> <span class="ow">in</span> <span class="n">user_tweets_clean1</span><span class="p">]</span>
-    <span class="n">user_tweets_clean3</span> <span class="o">=</span> <span class="p">[</span><span class="n">tweet_cleaner</span><span class="o">.</span><span class="n">leave_alphanumeric</span><span class="p">(</span><span class="n">t_str3</span><span class="p">)</span> <span class="k">for</span> <span class="n">t_str3</span> <span class="ow">in</span> <span class="n">user_tweets_clean2</span><span class="p">]</span>
+    <span class="n">user_tweets_clean1</span> <span class="o">=</span> <span class="p">[</span><span class="n">remove_sn</span><span class="p">(</span><span class="n">t_str1</span><span class="p">)</span> <span class="k">for</span> <span class="n">t_str1</span> <span class="ow">in</span> <span class="n">user_tweets_str</span><span class="p">]</span>
+    <span class="n">user_tweets_clean2</span> <span class="o">=</span> <span class="p">[</span><span class="n">remove_urls</span><span class="p">(</span><span class="n">t_str2</span><span class="p">)</span> <span class="k">for</span> <span class="n">t_str2</span> <span class="ow">in</span> <span class="n">user_tweets_clean1</span><span class="p">]</span>
+    <span class="n">user_tweets_clean3</span> <span class="o">=</span> <span class="p">[</span><span class="n">leave_alphanumeric</span><span class="p">(</span><span class="n">t_str3</span><span class="p">)</span> <span class="k">for</span> <span class="n">t_str3</span> <span class="ow">in</span> <span class="n">user_tweets_clean2</span><span class="p">]</span>
     <span class="n">user_tweets_collapse</span> <span class="o">=</span> <span class="s">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">user_tweets_clean3</span><span class="p">)</span>
     <span class="n">user_tweets_tokens</span> <span class="o">=</span> <span class="n">nltk</span><span class="o">.</span><span class="n">word_tokenize</span><span class="p">(</span><span class="n">user_tweets_collapse</span><span class="p">)</span>
 
@@ -3113,7 +3143,7 @@ In&nbsp;[14]:
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
 <p>The first question we want to answer is if individual users have their own &quot;language&quot; -- specifically, whether or not their language adheres to Zipf's Law. That is, we want to know if assembling their tweets into a corpus and doing frequency analysis results in any level of adherence to Zipf's Law. Before we can do this, we have to assemble a set of users.</p>
-<p>Since Twitter users can be queried by a <code>user_id</code>, which is always some integer, we use the <code>UsersLookup</code> call from the Twitter API and random integers to aggregate a set of users. Twitter has made it clear that their system of <code>user_id</code>'s is not uniform -- people have reported consecutive <code>user_id</code>'s in a row for a certain integer range, and jumps of 10 in a different range. For now, we simply use <code>randint</code> to obtain some random integer between 1 and <code>sys.maxint</code> and see if it matches to a user:</p>
+<p>Since Twitter users can be queried by a <code>user_id</code>, which is always some integer, we use the <code>UsersLookup</code> call from the Twitter API and random integers to aggregate a set of users. Twitter has made it clear that their system of <code>user_id</code>'s is not uniform -- people have reported consecutive <code>user_id</code>'s in a row for a certain integer range, and jumps of 10 in a different range. For now, we simply use <code>randint</code> to obtain some random integer between 1 and <code>sys.maxint</code> and see if it matches to a user. Note we're also storing a list of users using Python's pickle package.</p>
 </div>
 </div>
 </div>
@@ -3124,7 +3154,9 @@ In&nbsp;[15]:
 </div>
 <div class="inner_cell">
     <div class="input_area">
-<div class="highlight"><pre><span class="k">while</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">users</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">10000</span><span class="p">):</span>
+<div class="highlight"><pre><span class="kn">import</span> <span class="nn">pickle</span>
+
+<span class="k">while</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">users</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">10000</span><span class="p">):</span>
     <span class="n">uids</span> <span class="o">=</span> <span class="p">[</span><span class="n">randint</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">sys</span><span class="o">.</span><span class="n">maxint</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">100</span><span class="p">)]</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="n">these_users</span> <span class="o">=</span> <span class="n">twitter_api</span><span class="o">.</span><span class="n">UsersLookup</span><span class="p">(</span><span class="n">user_id</span><span class="o">=</span><span class="n">uids</span><span class="p">)</span>
@@ -3160,6 +3192,741 @@ In&nbsp;[15]:
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
 <p>Note the use of rate limiting -- Twitter only allows for a certain number of requests for a given call in a given 15 minute window. Since we are not aggregating a massive number of users (for now), we'll leave off on automating a 15-minute rest and retry implementation for later.</p>
+<h2 id="zipfian-fits-by-user">Zipfian Fits by User</h2>
+<p>Let's see how we might visualize a user's &quot;corpus&quot; similar to how we visualized the NLTK corpora.</p>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">
+In&nbsp;[16]:
+</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class="highlight"><pre><span class="k">def</span> <span class="nf">plotUserTopNWords</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">u</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">fdist</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">title</span> <span class="ow">is</span> <span class="bp">None</span> <span class="ow">and</span> <span class="p">(</span><span class="n">u</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">):</span>
+        <span class="n">title</span> <span class="o">=</span> <span class="n">u</span><span class="o">.</span><span class="n">screen_name</span>
+    <span class="k">if</span> <span class="n">fdist</span> <span class="ow">is</span> <span class="bp">None</span> <span class="ow">and</span> <span class="p">(</span><span class="n">u</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">):</span>
+        <span class="k">print</span> <span class="s">&#39;Getting tweets for &#39;</span> <span class="o">+</span> <span class="n">u</span><span class="o">.</span><span class="n">screen_name</span>
+        <span class="n">fdist</span> <span class="o">=</span> <span class="n">getUserTweetWordFreqDist</span><span class="p">(</span><span class="n">u</span><span class="p">)</span>
+    <span class="n">fsort_tuple</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">fdist</span><span class="o">.</span><span class="n">items</span><span class="p">(),</span> <span class="n">key</span><span class="o">=</span><span class="n">operator</span><span class="o">.</span><span class="n">itemgetter</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span>
+        <span class="n">reverse</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+    <span class="n">freqs_np_vals</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">t</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">fsort_tuple</span><span class="p">])[</span><span class="mi">0</span><span class="p">:</span><span class="n">n</span><span class="p">]</span>
+    <span class="n">freqs_np_words</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">t</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">fsort_tuple</span><span class="p">])[</span><span class="mi">0</span><span class="p">:</span><span class="n">n</span><span class="p">]</span>
+    <span class="n">width</span> <span class="o">=</span> <span class="o">.</span><span class="mi">35</span>
+    <span class="n">ind</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">freqs_np_vals</span><span class="p">))</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="n">title</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">bar</span><span class="p">(</span><span class="n">ind</span><span class="p">,</span> <span class="n">freqs_np_vals</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">xticks</span><span class="p">(</span><span class="n">ind</span> <span class="o">+</span> <span class="n">width</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span> <span class="n">freqs_np_words</span><span class="p">,</span> <span class="n">rotation</span><span class="o">=</span><span class="s">&#39;vertical&#39;</span><span class="p">)</span>
+    <span class="n">pl</span><span class="o">.</span><span class="n">rcParams</span><span class="p">[</span><span class="s">&#39;figure.figsize&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mf">20.0</span><span class="p">,</span> <span class="mf">6.0</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">
+In&nbsp;[18]:
+</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class="highlight"><pre><span class="n">ph</span> <span class="o">=</span> <span class="n">twitter_api</span><span class="o">.</span><span class="n">GetUser</span><span class="p">(</span><span class="n">screen_name</span><span class="o">=</span><span class="s">&#39;perezhilton&#39;</span><span class="p">)</span>
+<span class="n">NUM_PLOT</span> <span class="o">=</span> <span class="mi">60</span>
+<span class="n">plotUserTopNWords</span><span class="p">(</span><span class="n">u</span><span class="o">=</span><span class="n">ph</span><span class="p">,</span>
+    <span class="n">n</span><span class="o">=</span><span class="n">NUM_PLOT</span><span class="p">)</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area"><div class="prompt"></div>
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>
+Getting tweets for PerezHilton
+
+</pre>
+</div>
+</div>
+
+<div class="output_area"><div class="prompt"></div>
+
+
+<div class="output_png output_subarea ">
+<img src="data:image/png;base64,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
+AMBaWQgwtXnuzKqVBQAwKUYMAQBMkFFMAMAkGTEEADBB0zqKaXZ20w2m9K3Uxo03zzXXfKfVcwGA
+tWXEEAAANyCvEwD0gxFDAACsmmkcEWU0FAAsEBgCAKBXJA4HgAWmkgEAQEumtwGwqxMYAgCAlrrK
+xZR0F2SaxrxOAmgA00tgCAAApkBXQaYug1XTWKf1HvgSRAPWmhxDAADALmMaE5pPY50kWQdWyogh
+AACAdWa9j9ICuiMwBAAAwHZN4/TEaQxWTWOdui6L9clUMgAAAHYp0zh9bxrr1GVZXU5PNNVxuhgx
+BAAAAOyQkWO79ii0HTFiCAAAANjlTOPIqi7L6rJOO2LEEAAAAEBPCQwBAAAA9JTAEAAAAEBPCQwB
+AAAA9JTAEAAAAEBPCQwBAAAA9JTAEAAAAEBPCQwBAAAA9JTAEAAAAEBPCQwBAAAA9JTAEAAAAEBP
+CQwBAAAA9JTAEAAAAEBPCQwBAAAA9JTAEAAAAEBPrXVg6PAkFyW5JMnzd/zQuQ5ftquyuiqny7K6
+Kmday+qqnC7L6qqcaS2rq3K6LKurcqa1rK7K6bKsrsqZ1rK6KqfLsroqZ1rL6qqcLsvqqpxpLaur
+crosq6typrWsrsrpsqyuypnWsroqp8uyuipnWsvqqpwuy+qqnGktq6tyuiyrq3KmtayuyumyrK7K
+uaG1DAztnuQfUsGhg5M8KclB23/4XIcv3VVZXZXTZVldlTOtZXVVTpdldVXOtJbVVTldltVVOdNa
+VlfldFlWV+VMa1ldldNlWV2VM61ldVVOl2V1Vc60ltVVOV2W1VU501pWV+V0WVZX5UxrWV2V02VZ
+XZUzrWV1VU6XZXVVzrSW1VU5XZbVVTnTWlZX5XRZVlfl3NBaBobul+TSJNuSXJfkn5McsYavDwAA
+AMCQtQwM7Z/kG0P3L2/2AQAAADABM2v4Wr+Wmkb2jOb+U5LcP8mzhh5zdpJ7rmGdAAAAANa7c5Lc
+a7lfbFjDSlyR5ICh+wekRg0NW7aSAAAAAOzaNiT5SpLNSfZIjQ7aQfJpAAAAANaTRyb5cioJ9bET
+rgsAAAAAAAAAAPTPWiaf3lVtSnLnJDce2veJCdVl2j0oNVVwkLtqPsmbJlYbANaLA1PT0Vlbm5P8
+TJKPJLlJ6vx+zSQrtM4dmuSTS/Y9KMmnWpR1k1Q+zy+PWymYUndK8tUV7CPZM8mPV7CvTTnjmk1d
+M17bcbnrxS2SfHvSldjV3TbJo5M8KsmtW5bxjCTnJbk6yceT/CjJx1qWdWiSmza3n5rkr5LcYYLl
+JMlRS7bfaLY23pLk00leleTvh7ZR7J7kL1q+/rA3Nz9/t4OyBg5J8pzUKnr3bvH876cOeMttbRrZ
+G5K8tcXzhg0amsvVrW3D/65JPprkS839n0vyRy3KefMK963Ec1a4byX2TPLkJC9K8pJme3HLsrrS
+5d/qQan3N3xMaOOVqRP9jVKfh/9IHa/a2HOF+9aqnKSOwbs3t++a5DGp9zqO1475/KQuBO/aQTlJ
+vb/9ktx+aBvVHqnv2rua7Vlp/3f6RKqx//Ykv5PkZ1uW06XdUp/rwTHg9knu17Ksj65w387cNskb
+kpzS3D84ydNb1ul/J/lcFgJyd2lZp67OC7slObLF87bn8Svctz1dn9eT5Isr3Lczj0kFhLY1938+
+yftalHNZs/1bi+eupq7OMV1+pro83iW1SvMRqVWdfy3J/2xZzkeS7DN0f1OSD7co59Bl9j2oVY2q
+Pn+d5AvN9pdJbtainOW+G19oWaeujlNJBadWsm8t63TWCvftzFdS13t/nuRX0u7/NnDf1HX215rt
+nCT3aVlWV3+rX0qyV8s6DJy3g+3cFuVdkuSdSX45PRrU02Vj5sjUB+xNzbYto53sB85PfTjObu7f
+Lcl7WtbpvNQ/856pA9nvJDl9guUkyT9kIYDzulSj+19alnVhuvmwfraDci5IXdCcmzoB3qL5OdhG
+9eLU3/24JC9NHbj+b8u6/UmSY1INmtkkv53kj1uW9cksHsk2DT6R5P5ZOFnPZOEgPYqlJ/sNqf9r
+G8s1HM5eZt9KfDh1YfqHSZ43tI3qd1Mn05nUce+LSf5Hyzp19bfqIrg7cE7z81dT7+9maXcyTLpr
+zHRVzuB5N0myf+r88s6MH6htc/E3rKsLwaQuaP4j9TkabtCM6g1JTkzysCQPT3JCkte3rFNSx7sH
+pQKzX0/ynRZldBm0fE3q+3JRc39Tks+PWMZeqXPU4Hw12DYPlTuKU5I8IQvftxul2jJtnJP6mw9/
+Ntt8Dro6LyTtL/qW01UQpgsPTJ1LLk/y3CycW7Zm4Xg6irNSF9/D76ft56BLB6Ta0d9qtncluV2L
+cro8x3T1meryeHd86lhyYnN7sLWxXHunTRuoy+/Lu1Nt6julRoNubfat1EGpYNlXUwGzQeDs6LQ/
+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
+"
+>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>We can also apply the quantitative measure of Zipfian adherence (as we did for the other corpora):</p>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">
+In&nbsp;[20]:
+</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class="highlight"><pre><span class="n">fdist</span> <span class="o">=</span> <span class="n">getUserTweetWordFreqDist</span><span class="p">(</span><span class="n">ph</span><span class="p">)</span>
+<span class="n">zipfFit</span><span class="p">(</span><span class="n">wordOnlyFDist</span><span class="p">(</span><span class="n">fdist</span><span class="p">),</span> <span class="n">ph</span><span class="o">.</span><span class="n">screen_name</span><span class="p">,</span> <span class="n">toPlot</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">pr</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">ret</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area"><div class="prompt"></div>
+
+
+<div class="output_png output_subarea ">
+<img src="data:image/png;base64,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
+SUVORK5CYII=
+"
+>
+</div>
+
+</div>
+
+<div class="output_area"><div class="prompt"></div>
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>
+log-log r-squared for PerezHilton: 0.96995519775
+
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>For those that are wondering, my go-to user is Perez Hilton not because we condone anything that comes from that Twitter account, but that we're sure to hit the API-imposed max of around 3200 tweets when we pull from his account -- some quick research shows that he has one of the highest <code>.statuses_count</code>'s in Twitter's userbase.</p>
+<p>Now, we can go through all of the users that we aggregated in the previous section and apply a Zipfian fit. To leave us an open door for analysis, our pandas dataframe will also include various information about each user (one row = data for one user) that might provide insight as to why certain users' &quot;languages&quot; adhere to Zipf's more or less.</p>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">
+In&nbsp;[21]:
+</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class="highlight"><pre><span class="kn">import</span> <span class="nn">pandas</span> <span class="kn">as</span> <span class="nn">pd</span>
+
+<span class="n">users</span> <span class="o">=</span> <span class="n">pickle</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="nb">open</span><span class="p">(</span><span class="s">&#39;users1.p&#39;</span><span class="p">,</span> <span class="s">&#39;rb&#39;</span><span class="p">))</span>
+
+<span class="c"># we only want users that have tweeted at least X times</span>
+<span class="n">NUM_TWEET_CUTOFF</span> <span class="o">=</span> <span class="mi">1</span>
+<span class="n">lang_users</span> <span class="o">=</span> <span class="p">[</span><span class="n">u</span> <span class="k">for</span> <span class="n">u</span> <span class="ow">in</span> <span class="n">users</span> <span class="k">if</span> <span class="n">u</span><span class="o">.</span><span class="n">statuses_count</span> <span class="o">&gt;</span> <span class="n">NUM_TWEET_CUTOFF</span><span class="p">]</span>
+<span class="c"># also, filter out protected peeps</span>
+<span class="n">end_users</span> <span class="o">=</span> <span class="p">[</span><span class="n">u</span> <span class="k">for</span> <span class="n">u</span> <span class="ow">in</span> <span class="n">lang_users</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">u</span><span class="o">.</span><span class="n">protected</span><span class="p">]</span>
+<span class="n">col</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s">&#39;num_fit&#39;</span><span class="p">,</span> <span class="s">&#39;r_squared&#39;</span><span class="p">,</span> <span class="s">&#39;slope&#39;</span><span class="p">,</span> <span class="s">&#39;intercept&#39;</span><span class="p">,</span> <span class="s">&#39;statuses_count&#39;</span><span class="p">,</span> 
+    <span class="s">&#39;followers_count&#39;</span><span class="p">,</span> <span class="s">&#39;following_count&#39;</span><span class="p">,</span> <span class="s">&#39;age_days&#39;</span><span class="p">,</span>
+    <span class="s">&#39;favourites_count&#39;</span><span class="p">,</span> <span class="s">&#39;location&#39;</span><span class="p">,</span> <span class="s">&#39;verified&#39;</span>
+<span class="p">]</span>
+<span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="p">[</span><span class="n">u</span><span class="o">.</span><span class="n">screen_name</span> <span class="k">for</span> <span class="n">u</span> <span class="ow">in</span> <span class="n">end_users</span><span class="p">],</span>
+    <span class="n">columns</span><span class="o">=</span><span class="n">col</span><span class="p">)</span>
+<span class="n">df</span><span class="p">[</span><span class="s">&#39;statuses_count&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">u</span><span class="o">.</span><span class="n">statuses_count</span> <span class="k">for</span> <span class="n">u</span> <span class="ow">in</span> <span class="n">end_users</span><span class="p">]</span>
+<span class="n">df</span><span class="p">[</span><span class="s">&#39;followers_count&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">u</span><span class="o">.</span><span class="n">followers_count</span> <span class="k">for</span> <span class="n">u</span> <span class="ow">in</span> <span class="n">end_users</span><span class="p">]</span>
+<span class="n">df</span><span class="p">[</span><span class="s">&#39;following_count&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">u</span><span class="o">.</span><span class="n">friends_count</span> <span class="k">for</span> <span class="n">u</span> <span class="ow">in</span> <span class="n">end_users</span><span class="p">]</span>
+<span class="n">df</span><span class="p">[</span><span class="s">&#39;favourites_count&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">u</span><span class="o">.</span><span class="n">favourites_count</span> <span class="k">for</span> <span class="n">u</span> <span class="ow">in</span> <span class="n">end_users</span><span class="p">]</span>
+<span class="n">df</span><span class="p">[</span><span class="s">&#39;location&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">u</span><span class="o">.</span><span class="n">location</span> <span class="k">for</span> <span class="n">u</span> <span class="ow">in</span> <span class="n">end_users</span><span class="p">]</span>
+<span class="n">df</span><span class="p">[</span><span class="s">&#39;verified&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">u</span><span class="o">.</span><span class="n">verified</span> <span class="k">for</span> <span class="n">u</span> <span class="ow">in</span> <span class="n">end_users</span><span class="p">]</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Another column that requires some more though is the age (in days). We can calculate this using <code>pytz</code> and an epoch that we look up. A <a href="http://www.usatoday.com/story/tech/2014/03/20/twitter-eighth-birthday-first-tweet/6646493/">news article</a> says that March 21st, 2006 is the date of the oldest tweet.</p>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">
+In&nbsp;[22]:
+</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class="highlight"><pre><span class="kn">import</span> <span class="nn">pytz</span>
+<span class="n">epoch</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="s">&quot;Mar 21 2006 13:33:00&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">tzinfo</span><span class="o">=</span><span class="n">pytz</span><span class="o">.</span><span class="n">UTC</span><span class="p">)</span>
+<span class="n">df</span><span class="p">[</span><span class="s">&#39;age_days&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[(</span><span class="n">parser</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">created_at</span><span class="p">)</span> <span class="o">-</span> <span class="n">epoch</span><span class="p">)</span><span class="o">.</span><span class="n">days</span> <span class="k">for</span> <span class="n">u</span> <span class="ow">in</span> <span class="n">end_users</span><span class="p">]</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Now, we can cycle through our users and apply a Zipfian fit on each of them. Since we would be making up to 16 requests per user (~200 in a request, ~3200 max) and we want to go through all of the users in our <code>end_users</code> list, now is a good time to implement a rest-and-retry exception catch.</p>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">
+In&nbsp;[23]:
+</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class="highlight"><pre><span class="n">i</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="n">STOPPED</span> <span class="o">=</span> <span class="n">i</span>
+
+<span class="k">for</span> <span class="n">u</span> <span class="ow">in</span> <span class="n">end_users</span><span class="p">[</span><span class="n">STOPPED</span><span class="p">:]:</span>
+    <span class="c"># get as many tweets as possible for that user, assembling the tweets </span>
+    <span class="c"># into a corpus, clean and create an fdist</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="c"># the getUserTweetWordFreqDist can retrieve the tweets on its own,</span>
+        <span class="c"># but we also want to see how many tweets we use for the fit</span>
+        <span class="n">tweets</span> <span class="o">=</span> <span class="n">tweet_retriever</span><span class="o">.</span><span class="n">getUserTweets</span><span class="p">(</span><span class="n">u</span><span class="p">)</span>
+        <span class="n">fdist</span> <span class="o">=</span> <span class="n">tweet_retriever</span><span class="o">.</span><span class="n">getUserTweetWordFreqDist</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">tweets</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">Exception</span><span class="p">,</span> <span class="n">e</span><span class="p">:</span>
+        <span class="n">d</span> <span class="o">=</span> <span class="n">ast</span><span class="o">.</span><span class="n">literal_eval</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">))[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">error_code</span> <span class="o">=</span> <span class="n">d</span><span class="p">[</span><span class="s">&#39;code&#39;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">error_code</span> <span class="o">==</span> <span class="mi">88</span><span class="p">):</span>
+            <span class="k">print</span> <span class="n">d</span><span class="p">[</span><span class="s">&#39;message&#39;</span><span class="p">]</span>
+        <span class="k">print</span> <span class="s">&#39;Currently, u = &#39;</span> <span class="o">+</span> <span class="n">u</span><span class="o">.</span><span class="n">screen_name</span> <span class="o">+</span> <span class="s">&#39;, i = &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+        <span class="n">STOPPED</span> <span class="o">=</span> <span class="n">i</span>
+        <span class="c"># break</span>
+        <span class="n">pickle</span><span class="o">.</span><span class="n">dump</span><span class="p">([</span><span class="n">STOPPED</span><span class="p">,</span> <span class="n">df</span><span class="p">],</span> <span class="nb">open</span><span class="p">(</span><span class="s">&#39;zipf_fit_df.p&#39;</span><span class="p">,</span> <span class="s">&#39;wb&#39;</span><span class="p">))</span> <span class="c"># save to pickle</span>
+        <span class="k">print</span> <span class="s">&#39;Pausing for 15 minutes...&#39;</span>
+        <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">5</span> <span class="o">*</span> <span class="mi">60</span><span class="p">)</span>
+        <span class="k">print</span> <span class="s">&#39;.&#39;</span>
+        <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">5</span> <span class="o">*</span> <span class="mi">60</span><span class="p">)</span>
+        <span class="k">print</span> <span class="s">&#39;.&#39;</span>
+        <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">5</span> <span class="o">*</span> <span class="mi">60</span><span class="p">)</span>
+        <span class="k">print</span> <span class="s">&#39;Re-finding tweets&#39;</span>
+        <span class="n">tweets</span> <span class="o">=</span> <span class="n">tweet_retriever</span><span class="o">.</span><span class="n">getUserTweets</span><span class="p">(</span><span class="n">u</span><span class="p">)</span>
+        <span class="n">fdist</span> <span class="o">=</span> <span class="n">tweet_retriever</span><span class="o">.</span><span class="n">getUserTweetWordFreqDist</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">tweets</span><span class="p">)</span>
+    <span class="n">fdist_wordsOnly</span> <span class="o">=</span> <span class="n">wordOnlyFDist</span><span class="p">(</span><span class="n">fdist</span><span class="p">)</span>
+    <span class="c"># fit the fdist to Zipf&#39;s</span>
+    <span class="n">slope</span><span class="p">,</span> <span class="n">intercept</span><span class="p">,</span> <span class="n">r_squared</span> <span class="o">=</span> <span class="n">zipfFit</span><span class="p">(</span><span class="n">fdist_wordsOnly</span><span class="p">,</span> 
+        <span class="n">u</span><span class="o">.</span><span class="n">screen_name</span><span class="p">)</span>
+    <span class="c"># record stats</span>
+    <span class="n">df</span><span class="p">[</span><span class="s">&#39;num_fit&#39;</span><span class="p">][</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">tweets</span><span class="p">))</span>
+    <span class="n">df</span><span class="p">[</span><span class="s">&#39;r_squared&#39;</span><span class="p">][</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">r_squared</span>
+    <span class="n">df</span><span class="p">[</span><span class="s">&#39;slope&#39;</span><span class="p">][</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">slope</span>
+    <span class="n">df</span><span class="p">[</span><span class="s">&#39;intercept&#39;</span><span class="p">][</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">intercept</span>
+    <span class="n">i</span> <span class="o">+=</span> <span class="mi">1</span>
+    <span class="k">print</span> <span class="s">&#39;Finished &lt;&#39;</span> <span class="o">+</span> <span class="n">u</span><span class="o">.</span><span class="n">screen_name</span> <span class="o">+</span> <span class="s">&#39;&gt;&#39;</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>This process isn't fully automated -- for some reason, even when a user is not protected and has more than 1 tweet, we still get an authorization error, or sometimes, and HttpRequest error because we could not establish the connection to Twitter.</p>
 </div>
 </div>
 </div>
