@@ -16,7 +16,6 @@ from nltk.corpus import brown, reuters, nps_chat
     
 from dateutil import parser
 import time
-import ggplot
 
 def plotFdist(n, title=None, fdist=None):
     fsort_tuple = sorted(fdist.items(), key=operator.itemgetter(1),
@@ -217,8 +216,44 @@ print str(remaining) + ' requests left.  Try again at ' + str(dt_reset)
 # if we want to do more specific analysis w.r.t these variables and the
 # actual fdists (not just their Zipf-fit, we will have these stored in a df)
 
+#### exploring what we gathered ####
+df.describe()
+
 
 # definitely graphing with R
 # http://www.r-bloggers.com/ggplot2-in-python-a-major-barrier-broken/
 # or 
 # http://blog.yhathq.com/posts/ggplot-for-python.html
+from ggplot import *
+
+# boxplot of r-squared
+print ggplot(df, aes('r_squared')) + geom_boxplot()
+# take out outlier for vis
+df_vis = df.loc[df.index != df['followers_count'].argmax()]
+print ggplot(df_vis, aes('followers_count')) + geom_boxplot()
+print ggplot(df_vis, aes('followers_count', 'r_squared')) + \
+    geom_point()
+
+
+
+print ggplot(df, aes('statuses_count', 'r_squared')) + \
+    geom_point()
+
+df_quant = df[['num_fit', 'r_squared', 'slope',
+    'intercept', 'statuses_count', 'followers_count',
+    'following_count', 'age_days', 'favourites_count']].astype(float)
+# correlation needs to be all floats
+corr = df_quant.corr()
+
+# log and then calculate correlations
+df_quantlog = np.log(df_quant)
+corr2 = df_quantlog.corr()
+
+
+
+
+# this will fill in the 0's with NaN
+df_clean = df_short[(df_short != 0)]
+# and then drop those and already existing NaNs
+df_clean = df_clean.dropna()
+
