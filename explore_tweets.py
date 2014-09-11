@@ -216,9 +216,18 @@ print str(remaining) + ' requests left.  Try again at ' + str(dt_reset)
 # if we want to do more specific analysis w.r.t these variables and the
 # actual fdists (not just their Zipf-fit, we will have these stored in a df)
 
+
+
+
+
+
+
+
+
+
 #### exploring what we gathered ####
 df.describe()
-
+df_good = df[df.r_squared > 0.95]
 
 # definitely graphing with R
 # http://www.r-bloggers.com/ggplot2-in-python-a-major-barrier-broken/
