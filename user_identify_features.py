@@ -14,9 +14,8 @@ twitter_api = twitter.Api(
 
 [STOPPED, df] = pickle.load(open('zipf_fit_df.p', 'rb'))
 
-
 #### exploring what we gathered ####
-print df.describe()
+print df.astype(float).describe()
 
 ZCUT = 0.95
 # we'll say that a user adheres to Zipf's if their log-log r_squared
@@ -52,6 +51,15 @@ from sklearn import svm
 # see what is useful in seeing what users have Zipfian fits
 est2 = svm.SVC(kernel='linear')
 est2.fit(X, y)
+
+train_pred2 = est2.predict(X)
+train_error2 = sum(train_pred2 ^ y) / float(len(y))
+
+
+print est2.coef_
+
+pickle.dump([est, est2], open('classifiers.p', 'wb'))
+
 
 
 # df_vis = df.loc[df.index != df['followers_count'].argmax()]
