@@ -15,22 +15,51 @@ twitter_api = twitter.Api(
 [STOPPED, df] = pickle.load(open('zipf_fit_df.p', 'rb'))
 
 #### exploring what we gathered ####
-print df.astype(float).describe()
+print df['r_squared'].astype(float).describe()
+
 
 ZCUT = 0.95
 # we'll say that a user adheres to Zipf's if their log-log r_squared
 # is greater than 0.95 (~ 0.96, 0.97 for the existing corpora)
 df_fit = df[df.r_squared >= ZCUT]
 df_nfit = df[df.r_squared < ZCUT]
-
-# we want to see what characteristics of users differentiate those that
-# fit Zipf's well and those that don't.  to do that, we can build classifiers
-# and look at the coefficients to see which features are important
+print df_fit.describe()
+print df_nfit.describe()
 
 df_quant = df[['num_fit', 'r_squared', 'slope',
     'intercept', 'statuses_count', 'followers_count',
     'following_count', 'age_days', 'favourites_count']].astype(float)
 df_clean = df_quant.dropna()
+
+## visualization
+df_vis = df_clean.loc[df_clean.index != df['followers_count'].argmax()]
+df_vis = df_vis.loc[df_vis['favourites_count'] >= 1]
+df_vis['zipf'] = (df_vis.r_squared >= 0.96).astype(int)
+
+from ggplot import *
+
+print ggplot(df_vis, aes(x='followers_count', y='r_squared', 
+    colour='zipf')) + geom_point(aes(color='zipf'))
+
+# print ggplot(aes(fill='zipf', x='zipf', y='r_squared'), 
+#     data=df_vis) + geom_boxplot()
+
+print ggplot(df_vis, aes(x='statuses_count', 
+    fill='zipf')) + geom_density(alpha=0.3)
+
+print ggplot(df_vis, aes(x='followers_count', 
+    fill='zipf')) + geom_density(alpha=0.3)
+
+print ggplot(df_vis, aes(x='following_count', 
+    fill='zipf')) + geom_density(alpha=0.3)
+
+print ggplot(df_vis, aes(x='age_days', 
+    fill='zipf')) + geom_density(alpha=0.3)
+
+# we want to see what characteristics of users differentiate those that
+# fit Zipf's well and those that don't.  to do that, we can build classifiers
+# and look at the coefficients to see which features are important
+
 X = df_clean.drop(['r_squared', 'slope', 'intercept'], axis=1)
 y = df_clean.r_squared >= ZCUT
 
@@ -42,7 +71,11 @@ est.fit(X, y)
 train_pred = est.predict(X)
 train_error = sum(train_pred ^ y) / float(len(y))
 
-print est.coef_
+print train_error
+weights = pd.DataFrame(index=X.columns)
+weights['val'] = est.coef_[0]
+print weights
+
 # looks like the
 
 
