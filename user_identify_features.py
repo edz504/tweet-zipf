@@ -17,23 +17,39 @@ twitter_api = twitter.Api(
 #### exploring what we gathered ####
 print df['r_squared'].astype(float).describe()
 
-
-ZCUT = 0.95
-# we'll say that a user adheres to Zipf's if their log-log r_squared
-# is greater than 0.95 (~ 0.96, 0.97 for the existing corpora)
-print df_fit.describe()
-print df_nfit.describe()
-
 df_quant = df[['num_fit', 'r_squared', 'slope',
     'intercept', 'statuses_count', 'followers_count',
     'following_count', 'age_days', 'favourites_count']].astype(float)
 df_clean = df_quant.dropna()
 
+ZCUT = 0.96
+# we'll say that a user adheres to Zipf's if their log-log r_squared
+# is greater than 0.95 (~ 0.96, 0.97 for the existing corpora)
+df_fit = df_clean[df_clean.r_squared >= ZCUT]
+df_nfit = df_clean[df_clean.r_squared < ZCUT]
+
+print df_fit.describe()
+print df_nfit.describe()
+
+import scipy.stats as ss 
+
+for i in range(0, 9):
+    data_m = np.array([df_fit.describe().loc['mean'][i], 
+        df_nfit.describe().loc['mean'][i]])
+    data_df = np.array([df_fit.describe().loc['count'][i] - 1, 
+        df_nfit.describe().loc['count'][i] - 1])
+    data_sd = np.array([df_fit.describe().loc['std'][i], 
+        df_nfit.describe().loc['std'][i]])
+    plt.errorbar([0, 1], data_m, yerr=ss.t.ppf(0.95, data_df)*data_sd)
+    plt.xlim((-1,2))
+    plt.title(df_fit.columns[i])
+    plt.show()
+
+
 ## visualization
 df_vis = df_clean.loc[df_clean.index != df['followers_count'].argmax()]
 df_vis = df_vis.loc[df_vis['favourites_count'] >= 1]
 df_vis['zipf'] = df_vis.r_squared >= 0.96
-
 df_fit = df_vis[df_vis.r_squared >= ZCUT]
 df_nfit = df_vis[df_vis.r_squared < ZCUT]
 
