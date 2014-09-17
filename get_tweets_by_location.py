@@ -76,7 +76,9 @@ import numpy as np
 # calculating radius from square miles (obviously approximation)
 df['rad'] = np.sqrt(df['sq_mi'] / 2)
 
+df['geocode_query'] = [str(df['lat'][i]) + "," + str(df['lng'][i]) + \
+"," + str(df['rad'][i]) + "mi" for i in range(0, df.shape[0])]
 
-PTON = "40.346971,-74.660449"
-RAD = "10mi"
-results = api.search(q="", geocode=PTON + "," + RAD, count=100)
+
+results = api.search(q="", geocode=df['geocode_query'][0], count=100,
+    result_type = "recent")
