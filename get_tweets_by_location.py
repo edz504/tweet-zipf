@@ -72,12 +72,69 @@ import numpy as np
 # calculating radius from square miles (obviously approximation)
 df['rad'] = np.sqrt(df['sq_mi'] / 2)
 
+# (26.9 miles) / hour * (25.4 min) * (1 hour / 60 min) ==> 11.387
+# add for the suburbs (anything within average commute distance)
+# http://project.wnyc.org/commute-times-us/embed.html#5.00/42.000/-89.500
+# http://nhts.ornl.gov/briefs/Commuting%20for%20Life.pdf
+df['rad'] = df['rad'] + 26.9 * 25.4 / 60
+
 df['geocode_query'] = [str(df['lat'][i]) + "," + str(df['lng'][i]) + \
 "," + str(df['rad'][i]) + "mi" for i in range(0, df.shape[0])]
 
+import pickle
+pickle.dump(df, open('location_df.p', 'wb'))
 
-results = api.search(q="", geocode=df['geocode_query'][0], count=100,
-    result_type = "recent")
+def get_geo_tweets(gq):
+    keep_em_coming = True
+    total_results = []
+    while (keep_em_coming):
+        if len(total_results) == 0: # for first time
+            results = api.search(q="", geocode=gq, count=200,
+                result_type = "recent")
+        else:
+            results = api.search(q="", geocode=gq, count=200,
+                result_type = "recent", max_id = oldest_id - 1)
+        print "Pulled in " + str(len(results)) + " tweets"
+        if len(results) <= 1:
+            keep_em_coming = False
+        else:
+            oldest_id = min([t.id for t in results])
+        total_results += results
+    return(total_results)
 
+import ast, time
+####
+city_tweets = []
+STOPPED = 0
+###
+[STOPPED, city_tweets] = pickle.load(open('city_tweets.p', 'rb'))
+####
+for i in range(STOPPED, df.shape[0]):
+    gq = df['geocode_query'][i]
+    try:
+        total_results = get_geo_tweets(gq)
+    except Exception, e:
+        d = ast.literal_eval(str(e))[0]
+        error_code = d['code']
+        if (error_code == 88):
+            print d['message']
+        print 'Current city: ' + df.index[i] + ', i = ' + str(i)
+        STOPPED = i
+        pickle.dump([STOPPED, city_tweets], open('city_tweets.p', 'wb')) 
+        print 'Pausing for 15 minutes...'
+        time.sleep(5 * 60)
+        print '.'
+        time.sleep(5 * 60)
+        print '.'
+        time.sleep(5 * 60)
+        print 'Re-finding tweets'
+        total_results = get_geo_tweets(gq)
+    print "Finished " + df.index[i]
+    city_tweets.append(total_results)
+####
+# something we notice is that some of these big cities don't have
+# many Twitter users that 
+
+# take out the ones that don't have at least 100
 
 # we can use ggmaps to plot zipfian fits by city!!
