@@ -41,30 +41,26 @@ df = pd.DataFrame(index=[clean_name(r.findAll(is_cell)[1].text) + ", " + \
 
 # parse out square miles
 sq_mi_list = []
+dens_list = []
+lat_list = []
+lng_list = []
 for r in rows:
     cell = r.findAll(is_cell)[6]
     str_sq_mi = cell.span.string.next
     sq_mi = float(re.sub(r'(?!\.)\W', '',  str_sq_mi.encode('utf-8'))[0:-4])
     sq_mi_list.append(sq_mi)
-df['sq_mi'] = sq_mi_list
 
-# parse out population density
-dens_list = []
-for r in rows:
     cell = r.findAll(is_cell)[7]
     str_pop_dens = cell.span.string.next
     pop_dens = float(re.sub(r'(?!\.)\W', '',  str_pop_dens.encode('utf-8'))[0:-7])
     dens_list.append(pop_dens)
-df['pop_dens'] = dens_list
 
-# lat and lon
-lat_list = []
-lng_list = []
-for r in rows:
     cell = r.findAll(is_cell)[8]
     str_latlng = re.sub(r'(?!\.)(?!\s)\W', '', cell.string.encode('utf-8'))
     lat_list.append(float(str_latlng.split(' ')[0][0:-1])) #spot the N
     lng_list.append(float(str_latlng.split(' ')[1][0:-1])) # and the W
+df['sq_mi'] = sq_mi_list
+df['pop_dens'] = dens_list
 df['lat'] = lat_list
 df['lng'] = lng_list
 
@@ -82,3 +78,6 @@ df['geocode_query'] = [str(df['lat'][i]) + "," + str(df['lng'][i]) + \
 
 results = api.search(q="", geocode=df['geocode_query'][0], count=100,
     result_type = "recent")
+
+
+# we can use ggmaps to plot zipfian fits by city!!
