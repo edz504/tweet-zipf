@@ -5469,7 +5469,7 @@ In&nbsp;[5]:
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>The last thing we need to do before starting the Twitter mining is to construct two new columns -- the geocode radius and the geocode query itself. Since we pulled out the square miles for each city, and Twitter's geocode parameter is in the form <code>geocode=&quot;&lt;LAT&gt;,&lt;LNG&gt;,&lt;RAD&gt;mi&quot;</code>, we make the assumption that all city boundaries are circular (of course), and calculate the radius with some simple geometry. Then, we create the query column by concatenating the data we need from the other columns.</p>
+<p>The last thing we need to do before starting the Twitter mining is to construct two new columns -- the geocode radius and the geocode query itself. Since we pulled out the square miles for each city, and Twitter's geocode parameter is in the form <code>geocode=&quot;&lt;LAT&gt;,&lt;LNG&gt;,&lt;RAD&gt;mi&quot;</code>, we make the assumption that all city boundaries are circular (obviously a tenuous assumption at best), and calculate the radius with some simple geometry. We also account for suburbian areas, with data from <a href="http://project.wnyc.org/commute-times-us/embed.html#5.00/42.000/-89.500">here</a> and <a href="http://nhts.ornl.gov/briefs/Commuting%20for%20Life.pdf">here</a>. That gives us the calculation (26.9 mi) / hr * (25.4 min) * (1 hour / 60 min) = 11.387 miles, so we tack that on to all of the radii. Finally, we also add the query column, following the prescribed format above.</p>
 </div>
 </div>
 </div>
@@ -5483,6 +5483,7 @@ In&nbsp;[6]:
 <div class="highlight"><pre><span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
 <span class="c"># calculating radius from square miles (obviously approximation)</span>
 <span class="n">df</span><span class="p">[</span><span class="s">&#39;rad&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s">&#39;sq_mi&#39;</span><span class="p">]</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span>
+<span class="n">df</span><span class="p">[</span><span class="s">&#39;rad&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s">&#39;rad&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="mf">26.9</span> <span class="o">*</span> <span class="mf">25.4</span> <span class="o">/</span> <span class="mi">60</span>
 
 <span class="n">df</span><span class="p">[</span><span class="s">&#39;geocode_query&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s">&#39;lat&#39;</span><span class="p">][</span><span class="n">i</span><span class="p">])</span> <span class="o">+</span> <span class="s">&quot;,&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s">&#39;lng&#39;</span><span class="p">][</span><span class="n">i</span><span class="p">])</span> <span class="o">+</span> \
 <span class="s">&quot;,&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s">&#39;rad&#39;</span><span class="p">][</span><span class="n">i</span><span class="p">])</span> <span class="o">+</span> <span class="s">&quot;mi&quot;</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">df</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])]</span>
@@ -5532,6 +5533,103 @@ Palo Alto, California      37.442494,-122.142961,3.45571989606mi
 </div>
 </div>
 
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Now, we can start aggregating the tweets by location in a similar fashion to our aggregation of tweets by user. Because some cities have so many tweets (while strangely, some others have very few), we have to move the sleep work-around to inside the by-city aggegation function <code>get_geo_tweets</code>, rather than in the for loop with each city:</p>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">
+In&nbsp;[]:
+</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class="highlight"><pre><span class="c">## let&#39;s move the sleep to here</span>
+<span class="k">def</span> <span class="nf">get_geo_tweets</span><span class="p">(</span><span class="n">gq</span><span class="p">):</span>
+    <span class="n">keep_em_coming</span> <span class="o">=</span> <span class="bp">True</span>
+    <span class="n">total_results</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">while</span> <span class="p">(</span><span class="n">keep_em_coming</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">total_results</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span> <span class="c"># for first time</span>
+            <span class="n">results</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">q</span><span class="o">=</span><span class="s">&quot;&quot;</span><span class="p">,</span> <span class="n">geocode</span><span class="o">=</span><span class="n">gq</span><span class="p">,</span> <span class="n">count</span><span class="o">=</span><span class="mi">200</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">results</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">q</span><span class="o">=</span><span class="s">&quot;&quot;</span><span class="p">,</span> <span class="n">geocode</span><span class="o">=</span><span class="n">gq</span><span class="p">,</span> <span class="n">count</span><span class="o">=</span><span class="mi">200</span><span class="p">,</span>
+                    <span class="n">max_id</span> <span class="o">=</span> <span class="n">oldest_id</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">Exception</span><span class="p">,</span> <span class="n">e</span><span class="p">:</span>
+                <span class="n">d</span> <span class="o">=</span> <span class="n">ast</span><span class="o">.</span><span class="n">literal_eval</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">))[</span><span class="mi">0</span><span class="p">]</span>
+                <span class="n">error_code</span> <span class="o">=</span> <span class="n">d</span><span class="p">[</span><span class="s">&#39;code&#39;</span><span class="p">]</span>
+                <span class="k">if</span> <span class="p">(</span><span class="n">error_code</span> <span class="o">==</span> <span class="mi">88</span><span class="p">):</span>
+                    <span class="k">print</span> <span class="n">d</span><span class="p">[</span><span class="s">&#39;message&#39;</span><span class="p">]</span>
+                <span class="k">print</span> <span class="s">&#39;Current city: &#39;</span> <span class="o">+</span> <span class="n">df</span><span class="o">.</span><span class="n">index</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="s">&#39;, i = &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+                <span class="n">STOPPED</span> <span class="o">=</span> <span class="n">i</span>
+                <span class="k">print</span> <span class="s">&#39;Pausing for 15 minutes...&#39;</span>
+                <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">5</span> <span class="o">*</span> <span class="mi">60</span><span class="p">)</span>
+                <span class="k">print</span> <span class="s">&#39;.&#39;</span>
+                <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">5</span> <span class="o">*</span> <span class="mi">60</span><span class="p">)</span>
+                <span class="k">print</span> <span class="s">&#39;.&#39;</span>
+                <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">5</span> <span class="o">*</span> <span class="mi">60</span><span class="p">)</span>
+                <span class="k">print</span> <span class="s">&#39;Re-finding tweets&#39;</span>
+                <span class="n">results</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">q</span><span class="o">=</span><span class="s">&quot;&quot;</span><span class="p">,</span> <span class="n">geocode</span><span class="o">=</span><span class="n">gq</span><span class="p">,</span> <span class="n">count</span><span class="o">=</span><span class="mi">200</span><span class="p">,</span>
+                    <span class="n">max_id</span> <span class="o">=</span> <span class="n">oldest_id</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="k">print</span> <span class="s">&quot;Pulled in &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">results</span><span class="p">))</span> <span class="o">+</span> <span class="s">&quot; tweets&quot;</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">results</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">keep_em_coming</span> <span class="o">=</span> <span class="bp">False</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">oldest_id</span> <span class="o">=</span> <span class="nb">min</span><span class="p">([</span><span class="n">t</span><span class="o">.</span><span class="n">id</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">results</span><span class="p">])</span>
+        <span class="n">total_results</span> <span class="o">+=</span> <span class="n">results</span>
+    <span class="k">return</span><span class="p">(</span><span class="n">total_results</span><span class="p">)</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Note again the use of <code>pickle</code> to dump the FDists, just to make sure we don't lose any data or have to start over.</p>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">
+In&nbsp;[]:
+</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class="highlight"><pre><span class="kn">import</span> <span class="nn">ast</span><span class="o">,</span> <span class="nn">time</span>
+<span class="kn">import</span> <span class="nn">tweet_retriever</span>
+
+<span class="c">####</span>
+<span class="n">city_fdist</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="n">STOPPED</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="c"># or # </span>
+<span class="p">[</span><span class="n">STOPPED</span><span class="p">,</span> <span class="n">city_fdist</span><span class="p">]</span> <span class="o">=</span> <span class="n">pickle</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="nb">open</span><span class="p">(</span><span class="s">&#39;city_tweets.p&#39;</span><span class="p">,</span> <span class="s">&#39;rb&#39;</span><span class="p">))</span>
+<span class="c">####</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">STOPPED</span><span class="p">,</span> <span class="n">df</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
+    <span class="n">gq</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s">&#39;geocode_query&#39;</span><span class="p">][</span><span class="n">i</span><span class="p">]</span>
+    <span class="n">total_results</span> <span class="o">=</span> <span class="n">get_geo_tweets</span><span class="p">(</span><span class="n">gq</span><span class="p">)</span>
+    <span class="k">print</span> <span class="s">&quot;Finished collecting &quot;</span> <span class="o">+</span> <span class="n">df</span><span class="o">.</span><span class="n">index</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+    <span class="n">fdist</span> <span class="o">=</span> <span class="n">tweet_retriever</span><span class="o">.</span><span class="n">getUserTweetWordFreqDist</span><span class="p">(</span>
+        <span class="n">user_tweets</span><span class="o">=</span><span class="n">total_results</span><span class="p">)</span>
+    <span class="n">fdist_wordsOnly</span> <span class="o">=</span> <span class="n">wordOnlyFDist</span><span class="p">(</span><span class="n">fdist</span><span class="p">)</span>
+    <span class="n">city_fdist</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">fdist_wordsOnly</span><span class="p">)</span>
+</pre></div>
+
+</div>
 </div>
 </div>
 
