@@ -55,7 +55,7 @@ def getUserTweets(u):
 
 
 # supply either a screen name, or a list of tweets
-def getUserTweetWordFreqDist(u, user_tweets=None):
+def getUserTweetWordFreqDist(u=None, user_tweets=None):
     if user_tweets is None:
         user_tweets = getUserTweets(u)
     user_tweets_str = [t.text.encode('utf-8') for t in user_tweets]

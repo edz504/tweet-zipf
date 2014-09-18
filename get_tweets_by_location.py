@@ -83,17 +83,40 @@ df['geocode_query'] = [str(df['lat'][i]) + "," + str(df['lng'][i]) + \
 
 import pickle
 pickle.dump(df, open('location_df.p', 'wb'))
+# same method as before, didn't want to import
+def wordOnlyFDist(fdist):
+    # only leave letters (does the rest count as "language"? tricky)
+    word_only_keys = [k for k in fdist.keys() if re.search(r'^[a-zA-Z]+$',
+        k)]
+    return({ key : fdist[key] for key in word_only_keys })
 
+## let's move the sleep to here
 def get_geo_tweets(gq):
     keep_em_coming = True
     total_results = []
     while (keep_em_coming):
         if len(total_results) == 0: # for first time
-            results = api.search(q="", geocode=gq, count=200,
-                result_type = "recent")
+            results = api.search(q="", geocode=gq, count=200)
         else:
-            results = api.search(q="", geocode=gq, count=200,
-                result_type = "recent", max_id = oldest_id - 1)
+            try:
+                results = api.search(q="", geocode=gq, count=200,
+                    max_id = oldest_id - 1)
+            except Exception, e:
+                d = ast.literal_eval(str(e))[0]
+                error_code = d['code']
+                if (error_code == 88):
+                    print d['message']
+                print 'Current city: ' + df.index[i] + ', i = ' + str(i)
+                STOPPED = i
+                print 'Pausing for 15 minutes...'
+                time.sleep(5 * 60)
+                print '.'
+                time.sleep(5 * 60)
+                print '.'
+                time.sleep(5 * 60)
+                print 'Re-finding tweets'
+                results = api.search(q="", geocode=gq, count=200,
+                    max_id = oldest_id - 1)
         print "Pulled in " + str(len(results)) + " tweets"
         if len(results) <= 1:
             keep_em_coming = False
@@ -103,37 +126,31 @@ def get_geo_tweets(gq):
     return(total_results)
 
 import ast, time
+import tweet_retriever
+
 ####
-city_tweets = []
+city_fdist = []
 STOPPED = 0
-###
-[STOPPED, city_tweets] = pickle.load(open('city_tweets.p', 'rb'))
+# or # 
+[STOPPED, city_fdist] = pickle.load(open('city_tweets.p', 'rb'))
 ####
 for i in range(STOPPED, df.shape[0]):
     gq = df['geocode_query'][i]
-    try:
-        total_results = get_geo_tweets(gq)
-    except Exception, e:
-        d = ast.literal_eval(str(e))[0]
-        error_code = d['code']
-        if (error_code == 88):
-            print d['message']
-        print 'Current city: ' + df.index[i] + ', i = ' + str(i)
-        STOPPED = i
-        pickle.dump([STOPPED, city_tweets], open('city_tweets.p', 'wb')) 
-        print 'Pausing for 15 minutes...'
-        time.sleep(5 * 60)
-        print '.'
-        time.sleep(5 * 60)
-        print '.'
-        time.sleep(5 * 60)
-        print 'Re-finding tweets'
-        total_results = get_geo_tweets(gq)
-    print "Finished " + df.index[i]
-    city_tweets.append(total_results)
+    total_results = get_geo_tweets(gq)
+    print "Finished collecting " + df.index[i]
+    fdist = tweet_retriever.getUserTweetWordFreqDist(
+        user_tweets=total_results)
+    fdist_wordsOnly = wordOnlyFDist(fdist)
+    city_fdist.append(fdist_wordsOnly)
+
+# note: we should probably store the tweets at each request, not just at each city
+# because we could hit the limit within one city
+
+
 ####
 # something we notice is that some of these big cities don't have
-# many Twitter users that 
+# many Twitter users
+# that may depend on time of day, because we have "recent"
 
 # take out the ones that don't have at least 100
 
