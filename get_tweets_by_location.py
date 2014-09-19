@@ -123,6 +123,8 @@ def get_geo_tweets(gq):
         else:
             oldest_id = min([t.id for t in results])
         total_results += results
+        if (len(total_results) > 10000): # put in limit
+            return(total_results)
     return(total_results)
 
 import ast, time
