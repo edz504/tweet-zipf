@@ -44,6 +44,7 @@ sq_mi_list = []
 dens_list = []
 lat_list = []
 lng_list = []
+# I CLEANED OUT ALL THE NEGATIVE SIGNS
 for r in rows:
     cell = r.findAll(is_cell)[6]
     str_sq_mi = cell.span.string.next
@@ -58,7 +59,7 @@ for r in rows:
     cell = r.findAll(is_cell)[8]
     str_latlng = re.sub(r'(?!\.)(?!\s)\W', '', cell.string.encode('utf-8'))
     lat_list.append(float(str_latlng.split(' ')[0][0:-1])) #spot the N
-    lng_list.append(float(str_latlng.split(' ')[1][0:-1])) # and the W
+    lng_list.append(-float(str_latlng.split(' ')[1][0:-1])) # and the W
 df['sq_mi'] = sq_mi_list
 df['pop_dens'] = dens_list
 df['lat'] = lat_list

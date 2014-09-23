@@ -12,4 +12,8 @@ def getLexDiv(fdist):
 # compute lexicographical diversity
 lex_div = [getLexDiv(city) for city in city_fdist]
 
-df['lex_div'] = lex_div
+dump_df = df.drop('geocode_query', 1)
+dump_df['lex_div'] = lex_div
+
+f = 'cities.csv'
+dump_df.to_csv(f)
