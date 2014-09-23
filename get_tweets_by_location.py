@@ -134,20 +134,27 @@ import tweet_retriever
 ####
 city_fdist = []
 STOPPED = 0
+city_tweets = []
 # or # 
-[STOPPED, city_fdist] = pickle.load(open('city_tweets.p', 'rb'))
+[STOPPED, city_fdist] = pickle.load(open('city_fdist.p', 'rb'))
+city_tweets = pickle.load(open('city_tweets.p', 'rb'))
 ####
 for i in range(STOPPED, df.shape[0]):
     gq = df['geocode_query'][i]
     total_results = get_geo_tweets(gq)
+    tweet_text = [t.text for t in total_results]
+    city_tweets.append(tweet_text)
+    pickle.dump(city_tweets, open('city_tweets.p', 'wb'))
     print "Finished collecting " + df.index[i]
     fdist = tweet_retriever.getUserTweetWordFreqDist(
         user_tweets=total_results)
     fdist_wordsOnly = wordOnlyFDist(fdist)
     city_fdist.append(fdist_wordsOnly)
+    pickle.dump([STOPPED, city_fdist], open('city_fdist.p', 'wb'))
 
 # note: we should probably store the tweets at each request, not just at each city
 # because we could hit the limit within one city
+
 
 
 ####
