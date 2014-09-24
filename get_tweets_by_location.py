@@ -150,6 +150,7 @@ for i in range(STOPPED, df.shape[0]):
         user_tweets=total_results)
     fdist_wordsOnly = wordOnlyFDist(fdist)
     city_fdist.append(fdist_wordsOnly)
+    STOPPED = i
     pickle.dump([STOPPED, city_fdist], open('city_fdist.p', 'wb'))
 
 # note: we should probably store the tweets at each request, not just at each city
